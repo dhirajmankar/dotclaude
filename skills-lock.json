@@ -1,0 +1,118 @@
+{
+  "version": 1,
+  "description": "Registry of all skills — sources for reinstall/update. Skills live in ./skills/ and sync to ~/.claude/skills/",
+  "skills": {
+    "do": {
+      "source": "thedotmack/claude-mem",
+      "sourceType": "github",
+      "skillPath": "plugin/skills/do/SKILL.md"
+    },
+    "make-plan": {
+      "source": "thedotmack/claude-mem",
+      "sourceType": "github",
+      "skillPath": "plugin/skills/make-plan/SKILL.md"
+    },
+    "smart-explore": {
+      "source": "thedotmack/claude-mem",
+      "sourceType": "github",
+      "skillPath": "plugin/skills/smart-explore/SKILL.md"
+    },
+    "pathfinder": {
+      "source": "thedotmack/claude-mem",
+      "sourceType": "github",
+      "skillPath": "plugin/skills/pathfinder/SKILL.md"
+    },
+    "knowledge-agent": {
+      "source": "thedotmack/claude-mem",
+      "sourceType": "github",
+      "skillPath": "plugin/skills/knowledge-agent/SKILL.md"
+    },
+    "mem-search": {
+      "source": "thedotmack/claude-mem",
+      "sourceType": "github",
+      "skillPath": "plugin/skills/mem-search/SKILL.md"
+    },
+    "timeline-report": {
+      "source": "thedotmack/claude-mem",
+      "sourceType": "github",
+      "skillPath": "plugin/skills/timeline-report/SKILL.md"
+    },
+    "claude-code-plugin-release": {
+      "source": "thedotmack/claude-mem",
+      "sourceType": "github",
+      "skillPath": "plugin/skills/version-bump/SKILL.md"
+    },
+    "owasp-security": {
+      "source": "hoodini/ai-agents-skills",
+      "sourceType": "github",
+      "skillPath": "skills/owasp-security/SKILL.md"
+    },
+    "security-review": {
+      "source": "getsentry/skills",
+      "sourceType": "github",
+      "skillPath": "skills/security-review/SKILL.md"
+    },
+    "requesting-code-review": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "skillPath": "skills/requesting-code-review/SKILL.md"
+    },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "skillPath": "skills/frontend-design/SKILL.md"
+    },
+    "hooks-automation": {
+      "source": "local",
+      "sourceType": "local"
+    },
+    "pair-programming": {
+      "source": "local",
+      "sourceType": "local"
+    },
+    "skill-builder": {
+      "source": "local",
+      "sourceType": "local"
+    },
+    "sparc-methodology": {
+      "source": "local",
+      "sourceType": "local"
+    },
+    "stream-chain": {
+      "source": "local",
+      "sourceType": "local"
+    },
+    "swarm-advanced": {
+      "source": "local",
+      "sourceType": "local"
+    },
+    "swarm-orchestration": {
+      "source": "local",
+      "sourceType": "local"
+    },
+    "verification-quality": {
+      "source": "local",
+      "sourceType": "local"
+    },
+    "bencium-controlled-ux-designer": {
+      "source": "local",
+      "sourceType": "local"
+    },
+    "emilkowal-animations": {
+      "source": "local",
+      "sourceType": "local"
+    },
+    "find-skills": {
+      "source": "local",
+      "sourceType": "local"
+    },
+    "impeccable": {
+      "source": "local",
+      "sourceType": "local"
+    },
+    "ui-ux-pro-max": {
+      "source": "ui-ux-pro-max-skill",
+      "sourceType": "marketplace"
+    }
+  }
+}
