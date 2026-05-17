@@ -1,0 +1,8 @@
+# Local/secret settings
+settings.local.json
+
+# Runtime worktrees
+worktrees/
+
+# Session handoff (ephemeral)
+HANDOFF.md
