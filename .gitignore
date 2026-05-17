@@ -8,3 +8,6 @@ Thumbs.db
 
 # No secrets
 config/settings.local.json
+
+# Machine-specific project paths (create locally, never commit)
+projects.local.json

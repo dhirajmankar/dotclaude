@@ -1,15 +1,21 @@
 # dotclaude
 
-Global Claude Code configuration — skills, settings, and prompts.  
-All generic, non-project-specific Claude tooling lives here.
+Global and project-level Claude Code configuration — skills, commands, agents, and helpers.
 
 ## Structure
 
 ```
-skills/          ← 25 skills, synced to ~/.claude/skills/
-skills-lock.json ← skill registry (name → GitHub source)
-config/          ← global CLAUDE.md and settings templates
-sync.ps1         ← sync skills into ~/.claude/skills/
+skills/                  ← 25 global skills, synced to ~/.claude/skills/
+projects/
+  studiobooks/           ← StudioBooks project config
+    skills/              ← sb-*, v3-*, agentdb-*, github-*, reasoningbank-*
+    commands/
+    agents/
+    helpers/
+skills-lock.json         ← global skill registry (name → source)
+sync.ps1                 ← syncs global + project skills to the local machine
+projects.local.json      ← machine-specific project paths (gitignored, create manually)
+config/                  ← global CLAUDE.md and settings templates
 ```
 
 ## Quick start (new machine)
@@ -17,17 +23,49 @@ sync.ps1         ← sync skills into ~/.claude/skills/
 ```powershell
 git clone https://github.com/dhirajmankar/dotclaude C:\Users\Work\dotclaude
 cd C:\Users\Work\dotclaude
+
+# 1. Create projects.local.json with paths for projects you have checked out
+#    (see "Project path config" below)
+
+# 2. Run sync — installs global skills + project configs
 .\sync.ps1
 ```
 
-## Adding a skill
+## Project path config
 
-1. Install via superpowers or copy manually into `skills/<name>/`
-2. Add an entry to `skills-lock.json` with source info
-3. Run `.\sync.ps1` to push to global Claude
+`projects.local.json` maps project names to their `.claude` directories.
+This file is gitignored because paths differ per machine.
+
+```json
+{
+  "studiobooks": "C:\\Users\\Work\\StudioBooks\\.claude"
+}
+```
+
+Create it manually after cloning. Only include projects you have checked out locally.
+
+## How Claude Code finds skills
+
+Claude Code loads skills from two places:
+- **Global:** `~/.claude/skills/` — available in every project
+- **Project-level:** `<project_root>/.claude/skills/` — loaded when working in that project
+
+`sync.ps1` writes to both locations so skills are always discoverable.
+
+## Adding a global skill
+
+1. Add the skill folder to `skills/<name>/`
+2. Add an entry to `skills-lock.json`
+3. Run `.\sync.ps1`
 4. Commit and push
 
-## Skills reference
+## Adding a project-level skill
+
+1. Add the skill folder to `projects/<project>/skills/<name>/`
+2. Run `.\sync.ps1` — it copies the skill into the project's `.claude/skills/`
+3. Commit and push
+
+## Global skills reference
 
 | Skill | Source | Purpose |
 |-------|--------|---------|
@@ -56,3 +94,20 @@ cd C:\Users\Work\dotclaude
 | `find-skills` | local | Discover installable skills |
 | `impeccable` | local | Code quality enforcement |
 | `ui-ux-pro-max` | ui-ux-pro-max-skill marketplace | Full UI/UX design system |
+
+## StudioBooks project skills
+
+| Skill | Purpose |
+|-------|---------|
+| `sb-orchestrate` | Task router — entry point for all multi-step work |
+| `sb-commit` | Smart commit with verification gate |
+| `sb-verify` | Lint + build + test gate |
+| `sb-design-audit` | Pre-commit design token checker |
+| `sb-doc-sync` | Session-end documentation sync |
+| `sb-gst-calc` | GST calculation rules |
+| `sb-tds-rules` | TDS rules (Income Tax Act 2025) |
+| `sb-gstin-validate` | GSTIN format + checksum validation |
+| `sb-deal-calc` | Deal financial calculation formulas |
+| `sb-deal-stages` | Deal pipeline state machine |
+| `sb-skill-audit` | Skill graph consistency checker |
+| `sb-skill-feedback` | Skill update protocol |
