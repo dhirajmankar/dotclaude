@@ -1,6 +1,10 @@
 ---
 name: "sb-session-end"
 description: "StudioBooks session-end gate — AUTOMATICALLY invoke before stopping work. Single entry point for ending any work session. Runs verification, syncs 7 mandatory docs, and commits. Never skip. Triggers: 'end of session', 'done for now', 'let's stop', 'wrap up', 'before we stop', anytime work is concluding."
+auto-invokes:
+  - sb-verify    # Step 1 — lint/build/test gate
+  - sb-doc-sync  # Step 2 — sync 7 mandatory docs
+  - sb-commit    # Step 3 — commit docs changes
 ---
 
 # sb-session-end — Session End Gate

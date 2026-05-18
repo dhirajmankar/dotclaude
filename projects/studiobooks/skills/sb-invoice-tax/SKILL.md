@@ -1,6 +1,10 @@
 ---
 name: "sb-invoice-tax"
 description: "StudioBooks invoice + tax knowledge hub — AUTOMATICALLY invoke for any invoice, GST, TDS, GSTIN, SAC code, supply type, Section 194J/192, Form 16A, or tax threshold work. Routes to the authoritative sub-skill for the exact domain. Never guess tax rules — always route through here."
+auto-invokes:
+  - sb-gst-calc       # GST calculation rules and supply type decision
+  - sb-tds-rules      # TDS deduction rules (Income Tax Act 2025)
+  - sb-gstin-validate # GSTIN format + checksum validation
 ---
 
 # sb-invoice-tax — Invoice & Tax Knowledge Hub
