@@ -100,14 +100,19 @@ Claude Code loads skills from two places:
 | Skill | Purpose |
 |-------|---------|
 | `sb-orchestrate` | Task router — entry point for all multi-step work |
+| `sb-session-end` | Session-end gate — verify → doc-sync → commit |
 | `sb-commit` | Smart commit with verification gate |
 | `sb-verify` | Lint + build + test gate |
+| `sb-doc-sync` | Diff-based sync of 7 mandatory docs |
 | `sb-design-audit` | Pre-commit design token checker |
-| `sb-doc-sync` | Session-end documentation sync |
+| `sb-invoice-tax` | Invoice + tax knowledge hub (routes to sub-skills) |
 | `sb-gst-calc` | GST calculation rules |
 | `sb-tds-rules` | TDS rules (Income Tax Act 2025) |
 | `sb-gstin-validate` | GSTIN format + checksum validation |
+| `sb-deal-build` | Deal feature builder (routes to sub-skills) |
 | `sb-deal-calc` | Deal financial calculation formulas |
 | `sb-deal-stages` | Deal pipeline state machine |
+| `sb-react-patterns` | React + Zustand patterns for this codebase |
+| `sb-graph-navigate` | Graph-first file discovery (85% cheaper than Grep) |
 | `sb-skill-audit` | Skill graph consistency checker |
 | `sb-skill-feedback` | Skill update protocol |
