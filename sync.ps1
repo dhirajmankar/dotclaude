@@ -55,6 +55,14 @@ foreach ($project in $projects.PSObject.Properties) {
             Write-Host "Synced $name/$sub -> $subDst"
         }
     }
+
+    # Copy project settings.json (hooks, etc.)
+    $settingsSrc = "$srcDir\settings.json"
+    if (Test-Path $settingsSrc) {
+        Copy-Item -Force -Path $settingsSrc -Destination "$dotClaude\settings.json"
+        Write-Host "Synced $name/settings.json -> $dotClaude\settings.json"
+    }
+
     $projectCount++
 }
 

@@ -1,0 +1,18 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\Work\\StudioBooks\\.claude\\sync.ps1\"",
+            "shell": "powershell",
+            "async": true,
+            "statusMessage": "Syncing skills from dotclaude..."
+          }
+        ]
+      }
+    ]
+  }
+}
