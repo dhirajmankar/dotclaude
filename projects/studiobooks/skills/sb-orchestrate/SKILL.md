@@ -17,6 +17,7 @@ auto-invokes:
   - review                                # Phase 2 — after subagent/SPARC work
   - ship                                  # Phase 2 — when ready to land
   - sb-skill-creator                      # Pre-routing — full skill lifecycle (gap → build → wire)
+  - superpowers:finishing-a-development-branch  # Phase 2 — conflict check before ship
 ---
 
 # sb-orchestrate — StudioBooks Task Router

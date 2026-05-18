@@ -65,8 +65,9 @@ Only update the target files for gates that actually fired. Skip the rest.
 
 ### Step 2 — Update CLAUDE.md (always)
 - Read current `**Current Phase:**` line
-- Rewrite it: move completed work into the "Completed" list, update "Next:" to the next task
-- Do NOT change any other section unless explicitly relevant
+- Update it: append the completed work phrase, update the "Next sprint:" part
+- Do NOT create or reference a "Completed" list — CLAUDE.md no longer has one
+- Do NOT change any other section
 
 ### Step 3 — Update docs/CONTEXT.md (always)
 - Update `**Phase:**` — current status phrase

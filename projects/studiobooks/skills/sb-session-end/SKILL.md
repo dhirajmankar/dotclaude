@@ -1,10 +1,10 @@
 ---
 name: "sb-session-end"
-description: "StudioBooks session-end gate — AUTOMATICALLY invoke before stopping work. Single entry point for ending any work session. Runs verification, syncs 7 mandatory docs, and commits. Never skip. Triggers: 'end of session', 'done for now', 'let's stop', 'wrap up', 'before we stop', anytime work is concluding."
+description: "StudioBooks session-end gate — AUTOMATICALLY invoke before stopping work. Single entry point for ending any work session. Runs verification, syncs 8 docs, appends learnings, and commits. Never skip. Triggers: 'end of session', 'done for now', 'let's stop', 'wrap up', 'before we stop', anytime work is concluding."
 auto-invokes:
   - sb-verify    # Step 1 — lint/build/test gate
-  - sb-doc-sync  # Step 2 — sync 7 mandatory docs
-  - sb-commit    # Step 3 — commit docs changes
+  - sb-doc-sync  # Step 2 — sync 8 docs
+  - sb-commit    # Step 4 — commit docs changes
 ---
 
 # sb-session-end — Session End Gate
@@ -26,7 +26,7 @@ If sb-verify reports `❌ VERIFY FAILED`: stop, fix the issue, re-run verify. Do
 
 **Invoke the `sb-doc-sync` skill.**
 
-This updates the 7 mandatory files based on what changed this session:
+This updates up to 8 docs based on what changed this session:
 1. `CLAUDE.md` — Current Phase line
 2. `docs/CONTEXT.md` — Current Status block
 3. `memory/project_status.md` — task table, next step, completed commits
@@ -34,6 +34,7 @@ This updates the 7 mandatory files based on what changed this session:
 5. `docs/ARCHITECTURE.md` (if arch changed)
 6. `docs/STORES.md` (if any store was modified)
 7. `docs/BUSINESS_LOGIC.md` (if domain logic changed)
+8. `docs/DECISIONS.md` (only if `architecture-decision` skill was invoked this session)
 
 ---
 
