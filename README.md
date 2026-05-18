@@ -103,7 +103,7 @@ Claude Code loads skills from two places:
 | `sb-session-end` | Session-end gate — verify → doc-sync → commit |
 | `sb-commit` | Smart commit with verification gate |
 | `sb-verify` | Lint + build + test gate |
-| `sb-doc-sync` | Diff-based sync of 7 mandatory docs |
+| `sb-doc-sync` | Diff-based sync of 8 mandatory docs (7 + DECISIONS.md on arch changes) |
 | `sb-design-audit` | Pre-commit design token checker |
 | `sb-invoice-tax` | Invoice + tax knowledge hub (routes to sub-skills) |
 | `sb-gst-calc` | GST calculation rules |
@@ -116,3 +116,5 @@ Claude Code loads skills from two places:
 | `sb-graph-navigate` | Graph-first file discovery (85% cheaper than Grep) |
 | `sb-skill-audit` | Skill graph consistency checker |
 | `sb-skill-feedback` | Skill update protocol |
+| `sb-skill-creator` | New skill lifecycle (gap → build via skill-creator → wire) |
+| `sb-skill-audit` | Skill graph consistency checker |

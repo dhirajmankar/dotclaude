@@ -1,6 +1,6 @@
 ---
 name: "sb-doc-sync"
-description: "StudioBooks documentation sync — invoke ONCE per session via sb-session-end Step 2 only. Do NOT auto-invoke after individual tasks mid-session. Can also be run standalone with /sb-doc-sync when docs feel stale between sessions. Updates 7 mandatory files: CLAUDE.md, CONTEXT.md, memory/project_status.md, README.md, ARCHITECTURE.md, STORES.md, BUSINESS_LOGIC.md — stale sections only."
+description: "StudioBooks documentation sync — invoke ONCE per session via sb-session-end Step 2 only. Do NOT auto-invoke after individual tasks mid-session. Can also be run standalone with /sb-doc-sync when docs feel stale between sessions. Updates 8 files: CLAUDE.md, CONTEXT.md, memory/project_status.md, README.md, ARCHITECTURE.md, STORES.md, BUSINESS_LOGIC.md — stale sections only. File 8 (DECISIONS.md) updates only when architecture-decision was invoked."
 ---
 
 # sb-doc-sync — Documentation Sync
@@ -21,8 +21,9 @@ Performs a targeted diff-based update of the 7 mandatory session docs. Does **no
 | 5 | `docs/ARCHITECTURE.md` | Routing, auth, data layer, security, testing — only if those changed |
 | 6 | `docs/STORES.md` | Store state shapes and actions — only if a store was modified |
 | 7 | `docs/BUSINESS_LOGIC.md` | Subscription, GST/TDS, referral, domain logic — only if those changed |
+| 8 | `docs/DECISIONS.md` | Add new ADR entry if `architecture-decision` skill was invoked this session |
 
-> Files 4–7 are conditional: skip them if nothing in their domain changed this session.
+> Files 4–8 are conditional: skip them if nothing in their domain changed this session.
 
 ---
 
@@ -66,6 +67,10 @@ For each modified store: update its state shape table and action list.
 ### Step 8 — Update docs/BUSINESS_LOGIC.md (if domain logic changed)
 Skip if: only UI changes. Update if: subscription rules, GST/TDS, deal pipeline, invoicing logic changed.
 
+### Step 9 — Update docs/DECISIONS.md (if architecture-decision was invoked)
+Skip if: `architecture-decision` skill was not invoked this session.
+Update if: an ADR was written during the session — verify it was appended correctly in ADR format (Status, Context, Decision, Consequences, Alternatives).
+
 ---
 
 ## Writing Rules
@@ -89,7 +94,7 @@ Skip if: only UI changes. Update if: subscription rules, GST/TDS, deal pipeline,
 ## Feedback Protocol
 
 Update rules governed by `sb-skill-feedback` skill. Summary:
-- **Never change:** the 7-file list and their update responsibilities — other skills reference these by number
+- **Never change:** the 8-file list and their update responsibilities — other skills reference these by number
 - **Safe to add:** new file rows (if new mandatory docs are added), new writing rules, new `## Lessons Learned` entries
 - **Breaking changes:** require version bump + user approval + migration note
 

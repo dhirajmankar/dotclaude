@@ -3,16 +3,20 @@ name: "sb-orchestrate"
 description: "StudioBooks task router — AUTOMATICALLY invoke when starting any implementation task touching >1 file or >1 step. Decides: design first or code directly? Then which execution pattern. Single entry point for ALL multi-step work."
 model: haiku
 auto-invokes:
-  - design-consultation    # Phase 0 — new UI with uncertain design
-  - frontend-design        # Phase 0.5 — significant new UI surfaces
-  - ui-ux-pro-max          # Phase 0.5 — component/page design decisions
-  - emilkowal-animations   # Phase 0.5 — animation/motion work
-  - owasp-security         # Phase 0.5 — auth, crypto, payments, security
-  - sb-react-patterns      # Phase 0.5 — any JSX/Zustand work
-  - sb-design-audit        # Phase 2 — before committing UI files
-  - review                 # Phase 2 — after subagent/SPARC work
-  - ship                   # Phase 2 — when ready to land
-  - sb-skill-creator       # Pre-routing — full skill lifecycle (gap → build → wire)
+  - design-consultation                   # Phase 0 — new UI with uncertain design
+  - frontend-design                       # Phase 0.5 — significant new UI surfaces
+  - ui-ux-pro-max                         # Phase 0.5 — component/page design decisions
+  - emilkowal-animations                  # Phase 0.5 — animation/motion work
+  - owasp-security                        # Phase 0.5 — auth, crypto, payments, security
+  - sb-react-patterns                     # Phase 0.5 — any JSX/Zustand work
+  - architecture-decision                 # Phase 0.5 — architectural choices, ADRs
+  - superpowers:test-driven-development   # Phase 1 TDD gate — before any logic implementation
+  - superpowers:verification-before-completion  # Phase 2 — iron law gate before "done"
+  - superpowers:systematic-debugging      # Pre-routing — root cause before any bug fix
+  - sb-design-audit                       # Phase 2 — before committing UI files
+  - review                                # Phase 2 — after subagent/SPARC work
+  - ship                                  # Phase 2 — when ready to land
+  - sb-skill-creator                      # Pre-routing — full skill lifecycle (gap → build → wire)
 ---
 
 # sb-orchestrate — StudioBooks Task Router
@@ -27,7 +31,7 @@ One entry point. Five phases. Every multi-step task flows through here.
 
 | Task type | Action |
 |-----------|--------|
-| Bug, error, unexpected behavior, "why is X broken", "this doesn't work" | `Skill({ skill: "investigate" })` → done, stop here |
+| Bug, error, unexpected behavior, "why is X broken", "this doesn't work" | `Skill({ skill: "investigate" })` then `Skill({ skill: "superpowers:systematic-debugging" })` — root cause BEFORE any fix; stop here |
 | New product idea, concept pitch, "should we build X", "what if we add Y" | `Skill({ skill: "office-hours" })` → if approved by CEO review, continue to Phase 0 |
 | Strategy, scope, "what should we build", "think bigger", ambition question | `Skill({ skill: "plan-ceo-review" })` → done, stop here |
 | Code review, "check my diff", "look at my changes", pre-PR review | `Skill({ skill: "review" })` → done, stop here |
@@ -77,12 +81,22 @@ One entry point. Five phases. Every multi-step task flows through here.
 | Reading named symbol, store, component, hook, feature area before implementing | `Skill({ skill: "sb-graph-navigate" })` | 85% token savings vs Grep/Read |
 | Invoice, GST, TDS, GSTIN, SAC code, Form 16A, Section 194J | `Skill({ skill: "sb-invoice-tax" })` | Tax rules for Indian creators |
 | Deal, pipeline, kanban, stage, brand deal, DealForm, DealKanban | `Skill({ skill: "sb-deal-build" })` | Deal domain model + store patterns |
+| Architecture decision, "which approach for X", "should we use Y or Z", technology choice, pattern selection, "write an ADR" | `Skill({ skill: "architecture-decision" })` | Evaluates trade-offs + writes ADR to docs/DECISIONS.md |
 
 **Rule:** When in doubt, invoke. A false positive (invoke skill that wasn't needed) costs ~200 tokens. A false negative (miss a domain skill) costs a wrong implementation.
 
 ---
 
 ## Phase 1 — Execution Pattern
+
+### TDD Gate — runs BEFORE choosing an execution pattern
+
+If the task involves **logic** (new function, store action, service, utility, calculation, condition):
+→ `Skill({ skill: "superpowers:test-driven-development" })` — write the test first, then implement.
+
+Skip only for: pure layout/copy/styling changes with zero state logic.
+
+---
 
 ### Direct — inline, no agents
 
@@ -171,12 +185,13 @@ Skill({ skill: "superpowers:dispatching-parallel-agents" })
 
 | What was built | Gate |
 |----------------|------|
+| **Any implementation, before claiming "done"** | `Skill({ skill: "superpowers:verification-before-completion" })` — **IRON LAW: evidence before assertions** |
 | Any subagent or SPARC implementation | `Skill({ skill: "review" })` — code review before shipping |
 | UI or frontend changes (JSX, CSS, Tailwind) | `Skill({ skill: "sb-design-audit" })` — design token audit before commit |
 | Feature ready to ship | `Skill({ skill: "ship" })` — PR creation + deploy |
 | User asks for QA or site testing | `Skill({ skill: "qa" })` — automated browser testing |
 
-> Direct (inline) implementations: `review` is optional if the change is trivial (<5 lines, no logic).
+> There is no "trivial" escape hatch. verification-before-completion runs every time.
 
 ---
 
@@ -186,16 +201,20 @@ This table shows which skills auto-invoke which, so you can understand the full 
 
 ```
 sb-orchestrate
+  Pre-routing → investigate + systematic-debugging (bug path)
   Phase 0 ──► design-consultation → brainstorming → writing-plans
   Phase 0 ──► sparc:orchestrator (complex refactors)
-  Phase 0.5 → frontend-design    (new UI surfaces)
-  Phase 0.5 → ui-ux-pro-max      (design decisions)
-  Phase 0.5 → emilkowal-animations (motion work)
-  Phase 0.5 → owasp-security     (auth/crypto/payments)
-  Phase 0.5 → sb-react-patterns  (any JSX/Zustand)
-  Phase 0.5 → sb-graph-navigate  (named symbol lookup)
-  Phase 0.5 → sb-invoice-tax     (tax/invoice domain)
-  Phase 0.5 → sb-deal-build      (deals domain)
+  Phase 0.5 → frontend-design        (new UI surfaces)
+  Phase 0.5 → ui-ux-pro-max          (design decisions)
+  Phase 0.5 → emilkowal-animations   (motion work)
+  Phase 0.5 → owasp-security         (auth/crypto/payments)
+  Phase 0.5 → sb-react-patterns      (any JSX/Zustand)
+  Phase 0.5 → sb-graph-navigate      (named symbol lookup)
+  Phase 0.5 → sb-invoice-tax         (tax/invoice domain)
+  Phase 0.5 → sb-deal-build          (deals domain)
+  Phase 0.5 → architecture-decision  (arch choices + ADR)
+  Phase 1 ──► test-driven-development (TDD gate — any logic)
+  Phase 2 ──► verification-before-completion (IRON LAW — always)
   Phase 2 ──► review             (post-subagent)
   Phase 2 ──► sb-design-audit    (post-UI work)
   Phase 2 ──► ship               (ready to land)
