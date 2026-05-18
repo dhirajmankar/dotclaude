@@ -12,6 +12,7 @@ auto-invokes:
   - sb-design-audit        # Phase 2 — before committing UI files
   - review                 # Phase 2 — after subagent/SPARC work
   - ship                   # Phase 2 — when ready to land
+  - sb-skill-creator       # Pre-routing — full skill lifecycle (gap → build → wire)
 ---
 
 # sb-orchestrate — StudioBooks Task Router
@@ -33,7 +34,7 @@ One entry point. Five phases. Every multi-step task flows through here.
 | QA, "does this work", "test the site", "find bugs on the live app" | `Skill({ skill: "qa" })` → done, stop here |
 | Ship, deploy, push, "create a PR", "let's land this", "send it" | `Skill({ skill: "ship" })` → done, stop here |
 | "Review everything about this plan" | `Skill({ skill: "autoplan" })` → done, stop here |
-| Creating a new skill, "add a skill for X", skill development | `Skill({ skill: "skill-builder" })` → done, stop here |
+| Creating a new skill, "add a skill for X", skill development, "build a skill that..." | `Skill({ skill: "sb-skill-creator" })` → done, stop here |
 | Everything else (feature, fix, refactor, new page) | → Phase 0 |
 
 ---
