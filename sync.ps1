@@ -52,7 +52,7 @@ foreach ($project in $projects.PSObject.Properties) {
         $subDst = "$dotClaude\$sub"
         if (Test-Path $subSrc) {
             Copy-Item -Recurse -Force -Path $subSrc -Destination $dotClaude
-            Write-Host "Synced $name/$sub → $subDst"
+            Write-Host "Synced $name/$sub -> $subDst"
         }
     }
     $projectCount++
