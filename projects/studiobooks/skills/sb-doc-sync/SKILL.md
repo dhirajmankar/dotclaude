@@ -6,11 +6,35 @@ description: "StudioBooks documentation sync — invoke ONCE per session via sb-
 # sb-doc-sync — Documentation Sync
 
 ## What This Skill Does
-Performs a targeted diff-based update of the 7 mandatory session docs. Does **not** rewrite files wholesale — reads each file, compares against what actually changed this session, and updates only the sections that are now stale.
+Performs a targeted diff-based update of up to 8 session docs. Does **not** rewrite files wholesale — uses the gate-to-file routing map to know exactly which files need touching before even running `git diff`.
 
 ---
 
-## The 7 Files (update in this order)
+## Gate-to-File Routing
+
+Every documentation write is triggered by a named gate. When a gate fires **during** the session, note the file it targets. At session end, only those files need updating — no guessing.
+
+| Gate | Fires when | Target file |
+|------|-----------|-------------|
+| G-task-done | Completing a task in a multi-step plan | `docs/PendingWork.md` |
+| G-learning | Non-obvious discovery, hidden constraint | `learnings.md` |
+| G-context | Every session end | `docs/CONTEXT.md` |
+| G-decision | `architecture-decision` skill invoked | `docs/DECISIONS.md` |
+| G-store | Store shape or action added/changed | `docs/STORES.md` |
+| G-arch | Route, auth, or data layer changed | `docs/ARCHITECTURE.md` |
+| G-domain | Business rule added or changed | `docs/BUSINESS_LOGIC.md` |
+| G-sprint | New sprint planned | `docs/PendingWork.md` |
+| G-skill | New skill wired | `CLAUDE.md` auto-invoke table |
+
+**Write guards (enforce these):**
+- `CLAUDE.md` → only Current Phase line + new skill trigger rows. Nothing else.
+- `learnings.md` → only non-obvious discoveries. Never "added X component" or "fixed Y".
+- `docs/DECISIONS.md` → ADR format only (Status/Context/Decision/Consequences). No task notes.
+- `docs/CONTEXT.md` → 4–6 lines max. No code, no lists.
+
+---
+
+## The 8 Files (update in this order)
 
 | # | File | What to update |
 |---|------|----------------|
@@ -29,12 +53,15 @@ Performs a targeted diff-based update of the 7 mandatory session docs. Does **no
 
 ## Execution Steps
 
-### Step 1 — Audit what changed
+### Step 1 — Identify which gates fired this session
+
+Check which gates fired (see Gate-to-File Routing table above):
 ```bash
 git diff HEAD --name-only
 git diff --cached --name-only
 ```
-Build a mental list: which domains were touched? (UI, stores, auth, business logic, config)
+Map changed files to gates: `src/store/*` → G-store, `src/App.jsx` → G-arch, domain rule change → G-domain, etc.
+Only update the target files for gates that actually fired. Skip the rest.
 
 ### Step 2 — Update CLAUDE.md (always)
 - Read current `**Current Phase:**` line

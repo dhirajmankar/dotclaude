@@ -209,3 +209,19 @@ Stage only: the new `SKILL.md` + updated `CLAUDE.md` + updated `dotclaude/README
 | Create directly in `.claude/skills/` | Start in `dotclaude/projects/studiobooks/skills/` |
 | Skip `auto-invokes` frontmatter | Fill it in — it's how the graph tracks dependencies |
 | Build a skill that fires once a month | Log it in `learnings.md` instead |
+
+---
+
+## Feedback Protocol
+
+Update rules governed by `sb-skill-feedback` skill. Summary:
+- **Never change:** the 5-stage flow order or the Completion Checklist items — other docs reference these
+- **Safe to add:** new anti-pattern rows, new Stage 3 dependency map examples, new `## Lessons Learned` entries
+- **Breaking changes:** require version bump + user approval + migration note
+
+Current version: 1.0
+
+## Lessons Learned
+
+<!-- Entries added after each invocation where a new edge case, canonical pattern, or rule clarification was discovered. -->
+<!-- Format: - [YYYY-MM-DD] context: <task> — <one sentence lesson>. -->

@@ -36,7 +36,7 @@ One entry point. Five phases. Every multi-step task flows through here.
 | Strategy, scope, "what should we build", "think bigger", ambition question | `Skill({ skill: "plan-ceo-review" })` → done, stop here |
 | Code review, "check my diff", "look at my changes", pre-PR review | `Skill({ skill: "review" })` → done, stop here |
 | QA, "does this work", "test the site", "find bugs on the live app" | `Skill({ skill: "qa" })` → done, stop here |
-| Ship, deploy, push, "create a PR", "let's land this", "send it" | `Skill({ skill: "ship" })` → done, stop here |
+| Ship, deploy, push, "create a PR", "let's land this", "send it" | `Skill({ skill: "superpowers:finishing-a-development-branch" })` then `Skill({ skill: "ship" })` → done, stop here |
 | "Review everything about this plan" | `Skill({ skill: "autoplan" })` → done, stop here |
 | Creating a new skill, "add a skill for X", skill development, "build a skill that..." | `Skill({ skill: "sb-skill-creator" })` → done, stop here |
 | Everything else (feature, fix, refactor, new page) | → Phase 0 |
@@ -188,7 +188,7 @@ Skill({ skill: "superpowers:dispatching-parallel-agents" })
 | **Any implementation, before claiming "done"** | `Skill({ skill: "superpowers:verification-before-completion" })` — **IRON LAW: evidence before assertions** |
 | Any subagent or SPARC implementation | `Skill({ skill: "review" })` — code review before shipping |
 | UI or frontend changes (JSX, CSS, Tailwind) | `Skill({ skill: "sb-design-audit" })` — design token audit before commit |
-| Feature ready to ship | `Skill({ skill: "ship" })` — PR creation + deploy |
+| Feature ready to ship | `Skill({ skill: "superpowers:finishing-a-development-branch" })` then `Skill({ skill: "ship" })` — conflicts check + PR creation + deploy |
 | User asks for QA or site testing | `Skill({ skill: "qa" })` — automated browser testing |
 
 > There is no "trivial" escape hatch. verification-before-completion runs every time.
@@ -217,7 +217,7 @@ sb-orchestrate
   Phase 2 ──► verification-before-completion (IRON LAW — always)
   Phase 2 ──► review             (post-subagent)
   Phase 2 ──► sb-design-audit    (post-UI work)
-  Phase 2 ──► ship               (ready to land)
+  Phase 2 ──► finishing-a-development-branch → ship (ready to land)
 
 sb-session-end
   Step 1 ──► sb-verify
