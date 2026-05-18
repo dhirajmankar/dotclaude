@@ -55,6 +55,8 @@ Skip if nothing non-obvious happened this session. **Never append obvious things
 
 **Invoke the `sb-commit` skill** with type `chore` for the docs updates.
 
+> **Skip sb-verify inside sb-commit** — it already ran in Step 1 above. When sb-commit prompts to run sb-verify, skip that sub-step. Running lint + build + tests twice per session-end is wasteful. Step 1 of this skill is the verify gate; sb-commit here is only for staging and committing.
+
 Suggested message format:
 ```
 chore: update session docs — <2-3 word summary of what was built>

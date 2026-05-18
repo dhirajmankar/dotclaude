@@ -1,6 +1,6 @@
 ---
 name: "sb-doc-sync"
-description: "StudioBooks documentation sync — AUTOMATICALLY invoke after completing any named task, feature, or work block in this project. Never finish a task without syncing docs. Triggers: after a feature is built, after a plan task is complete, after any code is committed, when docs feel out of date. Updates 7 mandatory files: CLAUDE.md, CONTEXT.md, memory/project_status.md, README.md, ARCHITECTURE.md, STORES.md, BUSINESS_LOGIC.md — stale sections only."
+description: "StudioBooks documentation sync — invoke ONCE per session via sb-session-end Step 2 only. Do NOT auto-invoke after individual tasks mid-session. Can also be run standalone with /sb-doc-sync when docs feel stale between sessions. Updates 7 mandatory files: CLAUDE.md, CONTEXT.md, memory/project_status.md, README.md, ARCHITECTURE.md, STORES.md, BUSINESS_LOGIC.md — stale sections only."
 ---
 
 # sb-doc-sync — Documentation Sync

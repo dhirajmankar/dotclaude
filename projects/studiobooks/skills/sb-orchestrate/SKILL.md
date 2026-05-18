@@ -283,3 +283,19 @@ Run `/clear` when:
 | Swarm (re-enabled) | 6–15 cold starts | highest |
 
 When in doubt: **prefer fewer, better-specified agents over more agents.**
+
+---
+
+## Feedback Protocol
+
+Update rules governed by `sb-skill-feedback` skill. Summary:
+- **Never change:** the Pre-Routing classifier table or phase numbers — CLAUDE.md and other skills reference these
+- **Safe to add:** new pre-routing task types, new Phase 0.5 domain signals, new model tier rows, new `## Lessons Learned` entries
+- **Breaking changes:** require version bump + user approval + migration note
+
+Current version: 1.0
+
+## Lessons Learned
+
+<!-- Entries added after each invocation where a new edge case, canonical pattern, or rule clarification was discovered. -->
+<!-- Format: - [YYYY-MM-DD] context: <task> — <one sentence lesson>. -->

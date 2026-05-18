@@ -83,3 +83,19 @@ If you only see EXTRACTED edges, the graph is AST-only (Zustand selectors not re
 graphify . --mode deep
 ```
 This costs ~200–250k tokens one-time but makes the graph accurate for Zustand-heavy code.
+
+---
+
+## Feedback Protocol
+
+Update rules governed by `sb-skill-feedback` skill. Summary:
+- **Never change:** the token cost table or fallback chain order — these are the core value proposition
+- **Safe to add:** new fallback conditions, new query examples, new `## Lessons Learned` entries
+- **Breaking changes:** require version bump + user approval + migration note
+
+Current version: 1.0
+
+## Lessons Learned
+
+<!-- Entries added after each invocation where a new edge case, canonical pattern, or rule clarification was discovered. -->
+<!-- Format: - [YYYY-MM-DD] context: <task> — <one sentence lesson>. -->
