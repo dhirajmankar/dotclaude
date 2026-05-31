@@ -4,25 +4,30 @@ description: "StudioBooks task router — AUTOMATICALLY invoke when starting any
 model: haiku
 auto-invokes:
   - design-consultation                   # Phase 0 — new UI with uncertain design
-  - frontend-design                       # Phase 0.5 — significant new UI surfaces
-  - ui-ux-pro-max                         # Phase 0.5 — component/page design decisions
-  - emilkowal-animations                  # Phase 0.5 — animation/motion work
-  - owasp-security                        # Phase 0.5 — auth, crypto, payments, security
-  - sb-react-patterns                     # Phase 0.5 — any JSX/Zustand work
-  - architecture-decision                 # Phase 0.5 — architectural choices, ADRs
   - superpowers:test-driven-development   # Phase 1 TDD gate — before any logic implementation
   - superpowers:verification-before-completion  # Phase 2 — iron law gate before "done"
   - superpowers:systematic-debugging      # Pre-routing — root cause before any bug fix
+  - cso                                   # Phase 2 — post-implementation security audit (auth/payments/RLS)
+  - benchmark                             # Phase 2 — performance regression check
   - sb-design-audit                       # Phase 2 — before committing UI files
   - review                                # Phase 2 — after subagent/SPARC work
-  - ship                                  # Phase 2 — when ready to land
+  - codex                                 # Phase 2 — second opinion (optional, complex logic)
+  - release-health-gates                  # Phase 2 → Phase 3 gate
+  - ship                                  # Phase 2 — when ready to land (simple PR)
+  - land-and-deploy                       # Phase 2 — atomic merge+deploy+verify
   - sb-skill-creator                      # Pre-routing — full skill lifecycle (gap → build → wire)
   - superpowers:finishing-a-development-branch  # Phase 2 — conflict check before ship
+  - canary                                # Phase 3 — post-deploy monitoring (always)
+  - design-review                         # Phase 3 — live visual audit (UI features)
+  - document-release                      # Phase 3 — docs update post-ship (always)
+  - retro                                 # Phase 3 — sprint retrospective (per sprint, not per commit)
+  - sb-skill-distill                      # Phase 3 — skill learning engine (after retro, every 5+ sessions)
+  # Domain skills (Phase 0.5) fire via CLAUDE.md before sb-orchestrate — not listed here to avoid duplication
 ---
 
 # sb-orchestrate — StudioBooks Task Router
 
-One entry point. Five phases. Every multi-step task flows through here.
+One entry point. Six phases. Every multi-step task flows through here.
 
 ---
 
@@ -36,10 +41,17 @@ One entry point. Five phases. Every multi-step task flows through here.
 | New product idea, concept pitch, "should we build X", "what if we add Y" | `Skill({ skill: "office-hours" })` → if approved by CEO review, continue to Phase 0 |
 | Strategy, scope, "what should we build", "think bigger", ambition question | `Skill({ skill: "plan-ceo-review" })` → done, stop here |
 | Code review, "check my diff", "look at my changes", pre-PR review | `Skill({ skill: "review" })` → done, stop here |
-| QA, "does this work", "test the site", "find bugs on the live app" | `Skill({ skill: "qa" })` → done, stop here |
-| Ship, deploy, push, "create a PR", "let's land this", "send it" | `Skill({ skill: "superpowers:finishing-a-development-branch" })` then `Skill({ skill: "ship" })` → done, stop here |
+| QA — find AND fix bugs on the live app | `Skill({ skill: "qa" })` → done, stop here |
+| QA — report bugs only, no fixing | `Skill({ skill: "qa-only" })` → done, stop here |
+| Ship via simple PR | `Skill({ skill: "superpowers:finishing-a-development-branch" })` then `Skill({ skill: "ship" })` → done, stop here |
+| Ship as atomic merge + deploy + verify in one step | `Skill({ skill: "land-and-deploy" })` → done, stop here |
+| Post-deploy monitoring, "watch prod", "is prod stable after the deploy" | `Skill({ skill: "canary" })` → done, stop here |
+| Weekly retro, "what did we ship", "sprint review", "how'd the sprint go" | `Skill({ skill: "retro" })` → done, stop here |
+| Second opinion, "what does another model think", "get a codex review" | `Skill({ skill: "codex" })` → done, stop here |
+| Code quality health check, "how's our code health", "codebase health" | `Skill({ skill: "health" })` → done, stop here |
 | "Review everything about this plan" | `Skill({ skill: "autoplan" })` → done, stop here |
 | Creating a new skill, "add a skill for X", skill development, "build a skill that..." | `Skill({ skill: "sb-skill-creator" })` → done, stop here |
+| Copy edit, label/text change, single config tweak — ≤2 files, zero logic change | Skip all phases → implement directly |
 | Everything else (feature, fix, refactor, new page) | → Phase 0 |
 
 ---
@@ -53,9 +65,9 @@ One entry point. Five phases. Every multi-step task flows through here.
 | New feature or page with significant UI — visual design or UX is uncertain | `Skill({ skill: "design-consultation" })` → then `superpowers:brainstorming` → then `superpowers:writing-plans` → then Phase 0 plan reviews |
 | New feature, new page, or architectural decision — needs dialogue with user | `Skill({ skill: "superpowers:brainstorming" })` → then `superpowers:writing-plans` → then Phase 0 plan reviews |
 | Large refactor, new service layer, new patterns — design is clear but technically complex | `Skill({ skill: "sparc:orchestrator" })` — handles spec → pseudocode → architecture → refinement → completion autonomously |
-| Extending existing patterns, bug fix, known task — no design uncertainty | Skip to Phase 0.5 directly |
+| Extending existing patterns, bug fix, known task — no design uncertainty | Skip to Phase 1 directly |
 
-### Phase 0 Plan Reviews (after writing-plans, before Phase 0.5)
+### Phase 0 Plan Reviews (after writing-plans, before Phase 1)
 
 | Plan type | Review skill |
 |-----------|-------------|
@@ -68,23 +80,15 @@ One entry point. Five phases. Every multi-step task flows through here.
 
 ---
 
-## Phase 0.5 — Domain Skill Auto-Invocation
+## Phase 0.5 — Domain Skills
 
-**Detect the domain(s) of the task and invoke the matching skill(s) BEFORE reading any code or starting implementation. Multiple domains can match simultaneously.**
+**Domain skills are owned by CLAUDE.md's auto-invoke table and fire before sb-orchestrate is invoked.** There is no duplicate routing table here — invoking domain skills again wastes ~2,000 tokens per skill and creates drift when the two tables disagree.
 
-| Domain signal | Skill to invoke | Why |
-|---------------|----------------|-----|
-| New page, new component, significant UI redesign, "make this look better", "design the X screen" | `Skill({ skill: "frontend-design" })` | Production-grade aesthetics, avoids AI-slop UI |
-| Color/typography choices, layout decisions, UX patterns, "how should this look", any component styling | `Skill({ skill: "ui-ux-pro-max" })` | 50+ styles, 161 palettes, 99 UX guidelines |
-| Animation, transition, framer-motion, toast, drawer, gesture, "add motion to", "animate the" | `Skill({ skill: "emilkowal-animations" })` | 43 animation rules, easing, timing, Emil Kowalski patterns |
-| Auth, login, password, session, encryption, crypto, payment, Razorpay, "is this secure", RLS, secrets | `Skill({ skill: "owasp-security" })` | OWASP Top 10, secure patterns for financial SaaS |
-| Any JSX, any Zustand store, any React hook, any Tailwind UI | `Skill({ skill: "sb-react-patterns" })` | Prevents infinite loops, enforces scalar selectors |
-| Reading named symbol, store, component, hook, feature area before implementing | `Skill({ skill: "sb-graph-navigate" })` | 85% token savings vs Grep/Read |
-| Invoice, GST, TDS, GSTIN, SAC code, Form 16A, Section 194J | `Skill({ skill: "sb-invoice-tax" })` | Tax rules for Indian creators |
-| Deal, pipeline, kanban, stage, brand deal, DealForm, DealKanban | `Skill({ skill: "sb-deal-build" })` | Deal domain model + store patterns |
-| Architecture decision, "which approach for X", "should we use Y or Z", technology choice, pattern selection, "write an ADR" | `Skill({ skill: "architecture-decision" })` | Evaluates trade-offs + writes ADR to docs/DECISIONS.md |
+If you arrived here via CLAUDE.md's auto-invoke trigger, domain skills have already fired. Proceed to Phase 1.
 
-**Rule:** When in doubt, invoke. A false positive (invoke skill that wasn't needed) costs ~200 tokens. A false negative (miss a domain skill) costs a wrong implementation.
+If you invoked sb-orchestrate directly (bypassing CLAUDE.md), check CLAUDE.md's auto-invoke table for matching domain signals and invoke them now before proceeding.
+
+**sb-graph-navigate is the unconditional first step** before reading any source file. It should have fired already via CLAUDE.md's first row. If it hasn't, run: `Skill({ skill: "sb-graph-navigate" })` now — this single step saves 85% of token cost on all code exploration.
 
 ---
 
@@ -107,6 +111,8 @@ Use when ALL of these are true:
 - No new store, route, or service
 
 **Just implement inline.**
+
+**Domain check:** Before writing any code, confirm CLAUDE.md domain skills have already fired for this task. For auth/payment/RLS changes, `owasp-security` must have run. For any JSX edit, `sb-react-patterns` must have run. If they haven't, invoke them now — the Direct path does not skip domain obligations.
 
 ---
 
@@ -143,40 +149,31 @@ Keep tasks small: 1 task = 1–2 files = 1 commit. Smaller tasks = cheaper subag
 
 ---
 
-### SPARC orchestration — architecture unknowns only
+### Parallel Agents — DISABLED
 
-Use ONLY when SPARC was not already used in Phase 0 AND:
-- Building something genuinely new with multiple valid approaches
-- Needs spec → design → code → review phases
-
-```js
-Skill({ skill: "sparc:orchestrator" })
-```
-
-**Model tiering:**
-| Phase | Model |
-|-------|-------|
-| specification | haiku |
-| pseudocode | sonnet |
-| architecture | sonnet |
-| coder / refinement | sonnet |
-| reviewer | haiku |
-| tester | haiku |
+Ruflo swarm is disabled. For large parallel workloads (4+ independent modules), see the **Re-enabling Ruflo** appendix below.
 
 ---
 
-### Parallel Agents — 4+ truly independent modules
+## Mid-Execution Bug Protocol — interrupt from ANY phase
 
-Use ONLY when:
-- 4+ modules with zero file conflicts and no shared state
-- Each touches different files, different store, different component
-- Sequential execution would take >2 hours
+**If a bug, test failure, build error, or unexpected behavior is discovered at ANY point during Phase 1 or Phase 2 — STOP immediately and run this protocol. Never attempt an inline fix.**
 
-```js
-Skill({ skill: "superpowers:dispatching-parallel-agents" })
+```
+STOP current phase execution.
+Step 1 → Skill({ skill: "investigate" })          — diagnose root cause first
+Step 2 → Skill({ skill: "superpowers:systematic-debugging" }) — structured fix
+Step 3 → return to Phase 2 from the top (verification-before-completion)
 ```
 
-> Ruflo swarm is currently **disabled** (saves ~2,500 context tokens/turn). For very large parallel workloads, see Re-enable section below.
+**Triggers this protocol:**
+- `sb-verify` fails (lint error, build failure, test failure)
+- `verification-before-completion` reveals evidence that contradicts "done"
+- A subagent returns with an error or partial result
+- Running the app surfaces unexpected behavior
+- Any `console.error`, network failure, or runtime exception observed
+
+**Never:** inline-patch the failing line without running `investigate` first. The root cause is almost never where the symptom appears.
 
 ---
 
@@ -186,13 +183,40 @@ Skill({ skill: "superpowers:dispatching-parallel-agents" })
 
 | What was built | Gate |
 |----------------|------|
-| **Any implementation, before claiming "done"** | `Skill({ skill: "superpowers:verification-before-completion" })` — **IRON LAW: evidence before assertions** |
-| Any subagent or SPARC implementation | `Skill({ skill: "review" })` — code review before shipping |
+| **Any implementation, before claiming "done"** | `Skill({ skill: "superpowers:verification-before-completion" })` — **IRON LAW: evidence before assertions**. If it fails → Mid-Execution Bug Protocol above. |
+| Feature touches auth, payments, RLS, user data, encryption, or sessions | `Skill({ skill: "cso" })` — full post-implementation security audit; more thorough than the pre-implementation `owasp-security` domain check |
+| Performance-sensitive change: PWA, mobile rendering, data-heavy query, network call, animation | `Skill({ skill: "benchmark" })` — catch regressions before they reach prod |
+| Any subagent or SPARC implementation | `Skill({ skill: "review" })` — code review before shipping; optionally also `Skill({ skill: "codex" })` for a second model's opinion on complex logic |
 | UI or frontend changes (JSX, CSS, Tailwind) | `Skill({ skill: "sb-design-audit" })` — design token audit before commit |
-| Feature ready to ship | `Skill({ skill: "superpowers:finishing-a-development-branch" })` then `Skill({ skill: "ship" })` — conflicts check + PR creation + deploy |
-| User asks for QA or site testing | `Skill({ skill: "qa" })` — automated browser testing |
+| User asks for QA or site testing | `Skill({ skill: "qa" })` — automated browser testing with fixes; use `Skill({ skill: "qa-only" })` to report without fixing |
+| Feature ready to ship | `Skill({ skill: "release-health-gates" })` → then `Skill({ skill: "superpowers:finishing-a-development-branch" })` → then `Skill({ skill: "ship" })` or `Skill({ skill: "land-and-deploy" })` — validation + conflicts check + deploy |
 
 > There is no "trivial" escape hatch. verification-before-completion runs every time.
+> If verification-before-completion fails, the Mid-Execution Bug Protocol runs — not an inline patch.
+> `cso` and `benchmark` are conditional but not optional — if the gate condition is true, they run.
+
+---
+
+## Phase 3 — Post-Ship
+
+**Run after `ship` or `land-and-deploy` completes. This is where the pipeline closes the loop on quality, ops, and knowledge.**
+
+| When | Gate | What it does |
+|------|------|-------------|
+| **Always, after every prod deploy** | `Skill({ skill: "canary" })` | Watches prod for errors/regressions after deploy; do NOT mark the feature done until canary passes |
+| UI-heavy feature deployed | `Skill({ skill: "design-review" })` | Live visual audit via browser — checks the actual rendered app, not just the diff |
+| Any new or changed user-facing feature | `Skill({ skill: "document-release" })` | Updates user-facing docs and changelog post-ship; complements `changelog-writer` (which is dev-facing) |
+| End of sprint — NOT after every commit | `Skill({ skill: "retro" })` | Sprint-level retrospective: what shipped, what was hard, what to change next sprint |
+| End of sprint — after retro, when 5+ sessions have accumulated | `Skill({ skill: "sb-skill-distill" })` | Reads all Lessons Learned + session-outcomes.jsonl + gstack learnings; promotes repeated patterns into routing rules; makes skills smarter sprint-over-sprint |
+
+**Chaining context:** Pass to each Phase 3 skill:
+- The deploy URL (for canary + design-review to target)
+- The feature name and PR number (for document-release to scope)
+- The sprint summary from `sb-doc-sync` (for retro context)
+
+> Phase 3 is the ops lane. Most teams skip it — that's why prod incidents happen.
+> `canary` + `document-release` are the minimum for every prod deploy.
+> `retro` runs once per sprint. Never per-commit.
 
 ---
 
@@ -203,22 +227,31 @@ This table shows which skills auto-invoke which, so you can understand the full 
 ```
 sb-orchestrate
   Pre-routing → investigate + systematic-debugging (bug path)
+  CLAUDE.md ─► [domain skills fire here, before sb-orchestrate is invoked]
+               sb-graph-navigate (unconditional first step — named symbol lookup)
+               frontend-design / ui-ux-pro-max / emilkowal-animations (UI work)
+               owasp-security   (auth/crypto/payments)
+               sb-react-patterns (any JSX/Zustand)
+               sb-invoice-tax   (tax/invoice domain)
+               sb-deal-build    (deals domain)
+               architecture-decision (arch choices + ADR)
   Phase 0 ──► design-consultation → brainstorming → writing-plans
   Phase 0 ──► sparc:orchestrator (complex refactors)
-  Phase 0.5 → frontend-design        (new UI surfaces)
-  Phase 0.5 → ui-ux-pro-max          (design decisions)
-  Phase 0.5 → emilkowal-animations   (motion work)
-  Phase 0.5 → owasp-security         (auth/crypto/payments)
-  Phase 0.5 → sb-react-patterns      (any JSX/Zustand)
-  Phase 0.5 → sb-graph-navigate      (named symbol lookup)
-  Phase 0.5 → sb-invoice-tax         (tax/invoice domain)
-  Phase 0.5 → sb-deal-build          (deals domain)
-  Phase 0.5 → architecture-decision  (arch choices + ADR)
   Phase 1 ──► test-driven-development (TDD gate — any logic)
+  Phase 1/2 ► Mid-Execution Bug Protocol (bug found during running)
+               └──► investigate + systematic-debugging → loop back to Phase 2
   Phase 2 ──► verification-before-completion (IRON LAW — always)
-  Phase 2 ──► review             (post-subagent)
+               └── if fails → Mid-Execution Bug Protocol
+  Phase 2 ──► cso                (auth/payments/RLS/user-data features)
+  Phase 2 ──► benchmark          (performance-sensitive changes)
+  Phase 2 ──► review             (post-subagent; optionally codex for second opinion)
   Phase 2 ──► sb-design-audit    (post-UI work)
-  Phase 2 ──► finishing-a-development-branch → ship (ready to land)
+  Phase 2 ──► release-health-gates → finishing-a-development-branch → ship or land-and-deploy
+  Phase 3 ──► canary             (post-deploy monitoring — always)
+  Phase 3 ──► design-review      (live visual audit — UI features)
+  Phase 3 ──► document-release   (docs/changelog post-ship — always)
+  Phase 3 ──► retro              (sprint-level retrospective — not per-commit)
+  Phase 3 ──► sb-skill-distill  (sprint-level learning engine — after retro, every 5+ sessions)
 
 sb-session-end
   Step 1 ──► sb-verify
@@ -246,6 +279,24 @@ Mention swarm as an option when ALL of these are true and offer to re-enable it:
 - Estimated sequential time **>2 hours**
 
 Say: *"This task has [N] independent streams that would benefit from swarm coordination. Want me to re-enable ruflo so we can run them in parallel? It saves time but uses more agents."*
+
+---
+
+## Memory & Learning Layer — claude-flow (already enabled)
+
+`claude-flow` is already wired (`"enabledMcpjsonServers": ["claude-flow"]` in `.claude/settings.local.json`). The following tools are live right now — no enabling needed:
+
+| Tool | Used by | Purpose |
+|------|---------|---------|
+| `mcp__claude-flow__agentdb_pattern-store` | sb-skill-distill | Persist learned patterns across sprints |
+| `mcp__claude-flow__agentdb_pattern-search` | sb-skill-distill | Retrieve stored patterns for distillation |
+| `mcp__claude-flow__hooks_intelligence_trajectory-end` | sb-session-end Step 2.5 | Log session outcome with outcome metrics |
+| `mcp__claude-flow__hooks_intelligence_stats` | sb-skill-distill (enhanced) | Quantitative attention weights over routing decisions |
+| `mcp__claude-flow__memory_store` / `memory_retrieve` | Any skill | Cross-session key-value memory |
+
+**"Swarm disabled" only refers to:** `swarm_init`, `agent_spawn`, `task_orchestrate` — coordination tools that spawn parallel agents. Those stay disabled (save ~2,500 context tokens/turn).
+
+The memory tools above have no per-turn cost and are safe to use. If any `mcp__claude-flow__*` call fails, it means the server isn't responding — skip gracefully and fall back to file-based equivalents.
 
 ---
 
@@ -310,12 +361,16 @@ When in doubt: **prefer fewer, better-specified agents over more agents.**
 
 Update rules governed by `sb-skill-feedback` skill. Summary:
 - **Never change:** the Pre-Routing classifier table or phase numbers — CLAUDE.md and other skills reference these
-- **Safe to add:** new pre-routing task types, new Phase 0.5 domain signals, new model tier rows, new `## Lessons Learned` entries
+- **Safe to add:** new pre-routing task types, new rows in CLAUDE.md's auto-invoke table (domain signals live there now), new model tier rows, new `## Lessons Learned` entries
 - **Breaking changes:** require version bump + user approval + migration note
 
-Current version: 1.0
+Current version: 1.1 (added Phase 3 Post-Ship, cso+benchmark+codex in Phase 2, 8 new Pre-Routing rows)
 
 ## Lessons Learned
 
 <!-- Entries added after each invocation where a new edge case, canonical pattern, or rule clarification was discovered. -->
 <!-- Format: - [YYYY-MM-DD] context: <task> — <one sentence lesson>. -->
+- [2026-05-20] skill gap audit: sb-orchestrate had a Pre-Routing bug path for incoming bug tasks but no interrupt path for bugs found mid-execution (during Phase 1 or when Phase 2 verification fails) — added Mid-Execution Bug Protocol section with explicit `investigate` + `systematic-debugging` routing and a loop-back to Phase 2.
+- [2026-05-20] skill gap audit: the same "stop, fix" gap existed in sb-verify, sb-session-end, and sb-commit failure paths — all updated to route to `investigate` + `systematic-debugging` before any fix attempt; skill gap audits should propagate fixes to all downstream skills, not just the entry point.
+- [2026-05-20] eng audit v2: pipeline had no post-ship phase — canary, design-review, document-release, retro were all installed but unwired; added Phase 3 to close the ops lane; also added cso + benchmark to Phase 2 (pre-implementation owasp-security ≠ post-implementation security audit), codex as second-opinion option, and 8 new Pre-Routing rows (qa-only, land-and-deploy, canary, retro, codex, health) to match full gstack skill set.
+- [2026-05-20] eng audit: dual routing tables (CLAUDE.md auto-invoke + sb-orchestrate Phase 0.5) were identical and diverging independently — removed Phase 0.5 table from sb-orchestrate; CLAUDE.md now owns domain routing, sb-orchestrate owns execution orchestration only; also removed unreachable SPARC section from Phase 1, collapsed Parallel Agents to a stub, added tiny-task fast path to Pre-Routing, and broadened sb-react-patterns trigger in CLAUDE.md to catch all JSX pages.

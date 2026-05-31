@@ -18,21 +18,21 @@ Runs the three mandatory checks in order and reports a structured status. Acts a
 npm run lint
 ```
 Expected: zero errors. Warnings are acceptable.  
-On failure: **STOP. Fix all lint errors before proceeding.**
+On failure: **STOP. Invoke `investigate` then `superpowers:systematic-debugging` before attempting any fix. Never inline-patch without diagnosing root cause first.**
 
 ### Step 2 — Build
 ```bash
 npm run build
 ```
 Expected: `dist/` created, no TypeScript or Vite errors.  
-On failure: **STOP. Fix build errors before proceeding.**
+On failure: **STOP. Invoke `investigate` then `superpowers:systematic-debugging`. Build errors often have a root cause one layer above the reported line.**
 
 ### Step 3 — Tests
 ```bash
 npm run test -- --run
 ```
 Expected: all tests pass. Note the exact count (e.g. "323 passed").  
-On failure: **STOP. Fix failing tests or remove the test if the code was intentionally deleted.**
+On failure: **STOP. Invoke `investigate` then `superpowers:systematic-debugging`. Only delete a test if the code it covered was intentionally removed — verify this first.**
 
 ---
 
@@ -52,7 +52,7 @@ If any step fails, report:
 ```
 ❌ VERIFY FAILED at <step>
   Error: <first error line>
-  Action required: fix before continuing
+  Action required: invoke investigate → systematic-debugging → fix → re-run verify
 ```
 
 ---
@@ -88,3 +88,4 @@ Current version: 1.0
 
 <!-- Entries added after each invocation where a new edge case, canonical pattern, or rule clarification was discovered. -->
 <!-- Format: - [YYYY-MM-DD] context: <task> — <one sentence lesson>. -->
+- [2026-05-20] skill gap audit: sb-orchestrate review — "STOP. Fix the issue." on failure is insufficient; without explicit routing to `investigate` + `systematic-debugging`, the fix path is ad-hoc and the debugging skills never get invoked from failure points.

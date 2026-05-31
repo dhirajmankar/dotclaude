@@ -112,3 +112,7 @@ Current version: 1.0
 
 <!-- Entries added after each invocation where a new edge case, canonical pattern, or rule clarification was discovered. -->
 <!-- Format: - [YYYY-MM-DD] context: <task> — <one sentence lesson>. -->
+- [2026-05-20] distillation: promoted from learnings.md session 2 — skills live in TWO locations: (1) `~/.claude/skills/` global (dotclaude sync + gstack install), (2) `.claude/skills/` project-level (dotclaude sync via sync.ps1); `.agents/skills/` was an old Ruflo path, no longer used; when a skill listed in CLAUDE.md can't be found, check both locations before assuming it doesn't exist.
+- [2026-05-31] updated: gstack sub-skills (investigate, qa, ship, etc.) have preamble-tier ≥ 2 which previously excluded them from the Skill tool available list; copying them into dotclaude project skills causes the discovery algorithm to expose ALL gstack skills — not just the copied ones.
+- [2026-05-20] distillation: promoted from learnings.md session 8 — the reliable method for finding unwired skills is: `ls ~/.claude/skills/gstack/` vs all skill names in CLAUDE.md trigger rows; any installed skill with no trigger row is a gap; this found 12 unwired gstack skills in one pass.
+- [2026-05-20] audit run: post-distillation audit — when CLAUDE.md trigger phrases are broadened for a skill (e.g. sb-react-patterns expanded from "useState/useEffect" to "any JSX/TSX file"), always update the skill's frontmatter description to match or the skill won't auto-fire on the new trigger phrases.

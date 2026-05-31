@@ -13,8 +13,7 @@ Runs the verification gate, stages the right files, and creates a correctly form
 ## Step 1 — Invoke sb-verify first
 
 **Invoke the `sb-verify` skill using the Skill tool before touching git.**  
-If sb-verify reports `❌ VERIFY FAILED`, stop here and fix the issue.  
-Do not proceed to staging or committing until verify passes.
+If sb-verify reports `❌ VERIFY FAILED`: stop. Invoke `investigate` then `superpowers:systematic-debugging` to diagnose root cause. Never inline-patch the failing line — the symptom is rarely the cause. After fix, re-run sb-verify. Do not stage or commit until verify passes.
 
 ---
 
@@ -114,3 +113,4 @@ Current version: 1.0
 
 <!-- Entries added after each invocation where a new edge case, canonical pattern, or rule clarification was discovered. -->
 <!-- Format: - [YYYY-MM-DD] context: <task> — <one sentence lesson>. -->
+- [2026-05-20] skill gap audit: sb-orchestrate review — failure paths that say "stop, fix" without routing to debugging skills cause ad-hoc inline patching; explicit `investigate` + `systematic-debugging` routing added.

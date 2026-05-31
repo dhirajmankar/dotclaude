@@ -1,6 +1,6 @@
 ---
 name: "sb-react-patterns"
-description: "StudioBooks React patterns — invoke when writing any component, hook, or store interaction. Triggered by: useState, useEffect, useMemo, Zustand store hooks, location.state prefill, navigation items, currency display. Encodes production failures from learnings.md — prevents infinite render loops, ESLint violations, and broken prefill flows specific to this codebase."
+description: "StudioBooks React patterns — AUTOMATICALLY invoke for any JSX/TSX file: any component, any page (Dashboard, Settings, Referrals, Contacts, Calendar, Deals, Invoices, or any other), any hook, any Tailwind class work, or any store interaction. Triggered by: useState, useEffect, useMemo, Zustand store hooks, location.state prefill, navigation items, currency display. Encodes production failures from learnings.md — prevents infinite render loops, ESLint violations, and broken prefill flows specific to this codebase."
 ---
 
 # sb-react-patterns — StudioBooks React Patterns
@@ -176,3 +176,6 @@ Current version: 1.0
 
 <!-- Entries added after each invocation where a new edge case, canonical pattern, or rule clarification was discovered. -->
 <!-- Format: - [YYYY-MM-DD] context: <task> — <one sentence lesson>. -->
+- [2026-05-20] distillation: promoted from learnings.md session 2 — `location.state` prefill must be read at `useState` initialization time (`useState(location.state?.prefill ?? {})`), never inside `useEffect` with a setState call; the ESLint `react-hooks/set-state-in-effect` rule flags it and the useEffect approach causes an extra render cycle.
+- [2026-05-20] distillation: promoted from learnings.md session 2 — `useMemo` first argument must always be an inline function expression `useMemo(() => fn(), [deps])`, never a named function reference `useMemo(fn, [deps])`; the rule exists so eslint-plugin-react-hooks can statically analyze dependencies.
+- [2026-05-20] distillation: promoted from learnings.md session 2 — never omit planned-but-incomplete nav items entirely; use the `NavItemSoon` pattern (cursor-default, opacity-40, Lock icon) to signal future availability without routing users into broken stubs.

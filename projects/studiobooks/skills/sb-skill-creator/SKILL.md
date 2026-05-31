@@ -225,3 +225,5 @@ Current version: 1.0
 
 <!-- Entries added after each invocation where a new edge case, canonical pattern, or rule clarification was discovered. -->
 <!-- Format: - [YYYY-MM-DD] context: <task> — <one sentence lesson>. -->
+- [2026-05-20] distillation: promoted from learnings.md session 6 — before proposing to build a new skill, audit installed skills against CLAUDE.md trigger rows; the IT pipeline audit found 12 gstack skills installed but unwired — the work was wiring, not building; 0 new skills were needed despite a full-pipeline gap.
+- [2026-05-20] distillation: promoted from learnings.md session 4 — prefer `skill-creator` plugin over `skill-builder` for new skill development; `skill-creator` runs a full draft→test→eval→iterate loop that catches vague descriptions before they waste context in production; `skill-builder` only writes frontmatter.

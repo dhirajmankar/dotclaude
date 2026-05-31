@@ -1,6 +1,6 @@
 ---
 name: "sb-invoice-tax"
-description: "StudioBooks invoice + tax knowledge hub — AUTOMATICALLY invoke for any invoice, GST, TDS, GSTIN, SAC code, supply type, Section 194J/192, Form 16A, or tax threshold work. Routes to the authoritative sub-skill for the exact domain. Never guess tax rules — always route through here."
+description: "StudioBooks invoice + tax knowledge hub — AUTOMATICALLY invoke for any invoice, GST, TDS, GSTIN, SAC code, supply type, Section 194J/192/392/393, Form 16A, or tax threshold work. Routes to the authoritative sub-skill for the exact domain. Never guess tax rules — always route through here."
 auto-invokes:
   - sb-gst-calc       # GST calculation rules and supply type decision
   - sb-tds-rules      # TDS deduction rules (Income Tax Act 2025)
@@ -103,3 +103,5 @@ Current version: 1.0
 ## Lessons Learned
 
 <!-- Format: - [YYYY-MM-DD] context: <task> — <one sentence lesson>. -->
+- [2026-05-20] distillation: promoted from learnings.md session 3 — TDS records should auto-populate when an invoice is marked paid (invoice.status = 'paid' + tds_amount > 0), not via a manual "Log TDS" form; the form is only for pre-StudioBooks historical backfill; deferred creation on payment keeps data consistent and removes user burden.
+- [2026-05-20] distillation: promoted from learnings.md session 3 — TDS threshold is ₹50,000 per FY (IT Act 2025 update, effective April 1 2026); Section 194J → Section 392 (10%), Section 194C → Section 393 (1%); never hardcode tax thresholds or section numbers without checking sb-tds-rules first.

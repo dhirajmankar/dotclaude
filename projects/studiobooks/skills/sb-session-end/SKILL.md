@@ -18,7 +18,7 @@ Orchestrates the mandatory end-of-session sequence. Three steps in order — nev
 
 **Invoke the `sb-verify` skill.**
 
-If sb-verify reports `❌ VERIFY FAILED`: stop, fix the issue, re-run verify. Do not proceed to docs until verify passes.
+If sb-verify reports `❌ VERIFY FAILED`: stop. Invoke `investigate` then `superpowers:systematic-debugging` to diagnose root cause before attempting any fix. Never inline-patch on a verify failure. After fix, re-run sb-verify. Do not proceed to docs until verify passes.
 
 ---
 
@@ -35,6 +35,47 @@ This updates up to 8 docs based on what changed this session:
 6. `docs/STORES.md` (if any store was modified)
 7. `docs/BUSINESS_LOGIC.md` (if domain logic changed)
 8. `docs/DECISIONS.md` (only if `architecture-decision` skill was invoked this session)
+
+---
+
+## Step 2.5 — Log Session Outcome
+
+Append one JSON line to `docs/session-outcomes.jsonl` (create if missing). This file is the dataset `sb-skill-distill` uses to improve routing rules over time.
+
+```bash
+# Get current branch
+BRANCH=$(git branch --show-current 2>/dev/null || echo "unknown")
+```
+
+Write one line with these fields:
+
+```json
+{
+  "date": "YYYY-MM-DD",
+  "branch": "<current branch>",
+  "session_summary": "<2–4 words matching the sb-doc-sync CONTEXT.md update>",
+  "phase_used": "<direct|single-subagent|subagent-driven|sparc|mixed>",
+  "skills_invoked": ["<list every skill explicitly invoked this session>"],
+  "bug_protocol_triggered": false,
+  "build_passed": true,
+  "tests_passed": true,
+  "outcome": "<success|partial|blocked>"
+}
+```
+
+**How to fill the fields:**
+- `phase_used`: what Phase 1 execution pattern was used (Direct if <3 files inline, single-subagent if 1 Agent call, etc.)
+- `skills_invoked`: literal skill names that were Skill()-invoked this session (not domain skills that fired automatically)
+- `bug_protocol_triggered`: true if Mid-Execution Bug Protocol was invoked at any point
+- `outcome`: success = task done + all gates passed; partial = task done but some gate skipped; blocked = couldn't complete
+
+Optional — try, skip on error:
+```js
+mcp__claude-flow__hooks_intelligence_trajectory-end({
+  outcome: "<success|partial|blocked>",
+  metrics: { build_passed: true, tests_passed: true, bug_protocol_triggered: false }
+})
+```
 
 ---
 
@@ -93,3 +134,4 @@ Current version: 1.0
 ## Lessons Learned
 
 <!-- Format: - [YYYY-MM-DD] context: <task> — <one sentence lesson>. -->
+- [2026-05-20] skill gap audit: sb-orchestrate review — failure path "stop, fix the issue" had no escalation routing; added `investigate` + `systematic-debugging` before any fix attempt.

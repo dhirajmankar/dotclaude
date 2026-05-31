@@ -122,3 +122,5 @@ Current version: 1.0
 
 <!-- Entries added after each invocation where a new edge case, canonical pattern, or rule clarification was discovered. -->
 <!-- Format: - [YYYY-MM-DD] context: <task> — <one sentence lesson>. -->
+- [2026-05-20] distillation: promoted from learnings.md session 6 — when wiring a new skill into a routing table (CLAUDE.md trigger row or sb-orchestrate phase table), always also add it to the skill's frontmatter `auto-invokes:` list; the frontmatter is what dependency tracking tools read, not the prose; missing it silently breaks dependency graphs.
+- [2026-05-20] distillation: promoted from learnings.md session 8 — a "trivial escape hatch" in a gate (e.g. "review is optional for <5 lines") creates a divergence between the prose and the frontmatter auto-invokes list, because the frontmatter has no conditional logic; when removing an escape hatch, update BOTH the prose and the auto-invokes.
