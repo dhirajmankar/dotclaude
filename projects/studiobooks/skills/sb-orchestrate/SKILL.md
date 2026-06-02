@@ -116,12 +116,15 @@ Use when ALL of these are true:
 
 ---
 
-### Single Subagent — 1 Agent call
+### Single Subagent — preferred for small planned tasks
 
-Use when:
+**Prefer this over SDD when the plan has tasks that are each ≤2 files.** SDD adds 2 reviewer subagents per task; Single Subagent + one final `review` at Phase 2 is cheaper for simple, well-specified work.
+
+Use Single Subagent when:
 - 3–8 files, implementation is well-understood
 - New component or page with a known design
 - Extending an existing store action or adding a field
+- **Plan tasks are each ≤2 files and spec is clear** ← prefer this over SDD for small tasks
 
 ```js
 Agent({
@@ -134,18 +137,21 @@ Provide: exact file paths, the existing pattern to follow, what NOT to change.
 
 ---
 
-### superpowers:subagent-driven-development — PRIMARY for planned work
+### superpowers:subagent-driven-development — for complex planned work
 
 Use when:
 - A plan file exists at `docs/superpowers/plans/YYYY-MM-DD-<name>.md`
 - Tasks are numbered, each ~1 commit
-- **Default for all multi-task feature work in StudioBooks**
+- **Tasks touch 3+ files OR have significant integration concerns** — SDD's dual review per task is worth the cost here
+- Do NOT use SDD for plans where every task is ≤2 files — use Single Subagent instead (saves 2 reviewers per task)
 
 ```js
 Skill({ skill: "superpowers:subagent-driven-development" })
 ```
 
 Keep tasks small: 1 task = 1–2 files = 1 commit. Smaller tasks = cheaper subagents.
+
+**Test coverage is mandatory in SDD.** The code quality reviewer must fail any task that adds logic (new function, store action, service, calculation, condition) without corresponding tests. No tests = not approved. Implementer must write `// @vitest-environment node` or `jsdom` annotation on every new test file (CLAUDE.md Hard Rule 5).
 
 ---
 
@@ -186,7 +192,9 @@ Step 3 → return to Phase 2 from the top (verification-before-completion)
 | **Any implementation, before claiming "done"** | `Skill({ skill: "superpowers:verification-before-completion" })` — **IRON LAW: evidence before assertions**. If it fails → Mid-Execution Bug Protocol above. |
 | Feature touches auth, payments, RLS, user data, encryption, or sessions | `Skill({ skill: "cso" })` — full post-implementation security audit; more thorough than the pre-implementation `owasp-security` domain check |
 | Performance-sensitive change: PWA, mobile rendering, data-heavy query, network call, animation | `Skill({ skill: "benchmark" })` — catch regressions before they reach prod |
-| Any subagent or SPARC implementation | `Skill({ skill: "review" })` — code review before shipping; optionally also `Skill({ skill: "codex" })` for a second model's opinion on complex logic |
+| **Single Subagent** implementation | `Skill({ skill: "review" })` — code review before shipping; optionally also `Skill({ skill: "codex" })` for a second model's opinion on complex logic |
+| **superpowers:subagent-driven-development** implementation | **Skip `review` here** — SDD already ran spec-compliance + code-quality review per task PLUS a final reviewer. Running `review` again is a 4th pass on already-reviewed code. Only add `review` if the final SDD reviewer flagged unresolved concerns. |
+| SPARC implementation | `Skill({ skill: "review" })` — code review before shipping |
 | UI or frontend changes (JSX, CSS, Tailwind) | `Skill({ skill: "sb-design-audit" })` — design token audit before commit |
 | User asks for QA or site testing | `Skill({ skill: "qa" })` — automated browser testing with fixes; use `Skill({ skill: "qa-only" })` to report without fixing |
 | Feature ready to ship | `Skill({ skill: "release-health-gates" })` → then `Skill({ skill: "superpowers:finishing-a-development-branch" })` → then `Skill({ skill: "ship" })` or `Skill({ skill: "land-and-deploy" })` — validation + conflicts check + deploy |
@@ -244,7 +252,7 @@ sb-orchestrate
                └── if fails → Mid-Execution Bug Protocol
   Phase 2 ──► cso                (auth/payments/RLS/user-data features)
   Phase 2 ──► benchmark          (performance-sensitive changes)
-  Phase 2 ──► review             (post-subagent; optionally codex for second opinion)
+  Phase 2 ──► review             (post-Single-Subagent or post-SPARC only; NOT after SDD — SDD has 3 built-in reviews per task)
   Phase 2 ──► sb-design-audit    (post-UI work)
   Phase 2 ──► release-health-gates → finishing-a-development-branch → ship or land-and-deploy
   Phase 3 ──► canary             (post-deploy monitoring — always)
@@ -374,3 +382,4 @@ Current version: 1.1 (added Phase 3 Post-Ship, cso+benchmark+codex in Phase 2, 8
 - [2026-05-20] skill gap audit: the same "stop, fix" gap existed in sb-verify, sb-session-end, and sb-commit failure paths — all updated to route to `investigate` + `systematic-debugging` before any fix attempt; skill gap audits should propagate fixes to all downstream skills, not just the entry point.
 - [2026-05-20] eng audit v2: pipeline had no post-ship phase — canary, design-review, document-release, retro were all installed but unwired; added Phase 3 to close the ops lane; also added cso + benchmark to Phase 2 (pre-implementation owasp-security ≠ post-implementation security audit), codex as second-opinion option, and 8 new Pre-Routing rows (qa-only, land-and-deploy, canary, retro, codex, health) to match full gstack skill set.
 - [2026-05-20] eng audit: dual routing tables (CLAUDE.md auto-invoke + sb-orchestrate Phase 0.5) were identical and diverging independently — removed Phase 0.5 table from sb-orchestrate; CLAUDE.md now owns domain routing, sb-orchestrate owns execution orchestration only; also removed unreachable SPARC section from Phase 1, collapsed Parallel Agents to a stub, added tiny-task fast path to Pre-Routing, and broadened sb-react-patterns trigger in CLAUDE.md to catch all JSX pages.
+- [2026-06-02] token audit: Phase 2 `review` was firing after `subagent-driven-development` creating a 4th review pass (SDD already runs spec+quality review per task + final review = 2N+1 reviews). Added dedup guard: skip `review` in Phase 2 when SDD was the execution path. Also: SDD was used for plans with ≤2-file tasks — moved Single Subagent preference above SDD with explicit file-count trigger. Added mandatory test coverage rule to SDD code quality reviewer (fail if logic added without tests).
