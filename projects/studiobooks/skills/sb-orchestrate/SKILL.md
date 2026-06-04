@@ -185,23 +185,160 @@ Step 3 → return to Phase 2 from the top (verification-before-completion)
 
 ## Phase 2 — Post-Execution Gates
 
-**Run these after Phase 1 completes. Mandatory for subagent/SPARC work.**
+**Run in order after Phase 1 completes. Each step has an explicit outcome — pass, fix-loop, or escalate. Never skip a step because "it's probably fine".**
 
-| What was built | Gate |
-|----------------|------|
-| **Any implementation, before claiming "done"** | `Skill({ skill: "superpowers:verification-before-completion" })` — **IRON LAW: evidence before assertions**. If it fails → Mid-Execution Bug Protocol above. |
-| Feature touches auth, payments, RLS, user data, encryption, or sessions | `Skill({ skill: "cso" })` — full post-implementation security audit; more thorough than the pre-implementation `owasp-security` domain check |
-| Performance-sensitive change: PWA, mobile rendering, data-heavy query, network call, animation | `Skill({ skill: "benchmark" })` — catch regressions before they reach prod |
-| **Single Subagent** implementation | `Skill({ skill: "review" })` — code review before shipping; optionally also `Skill({ skill: "codex" })` for a second model's opinion on complex logic |
-| **superpowers:subagent-driven-development** implementation | **Skip `review` here** — SDD already ran spec-compliance + code-quality review per task PLUS a final reviewer. Running `review` again is a 4th pass on already-reviewed code. Only add `review` if the final SDD reviewer flagged unresolved concerns. |
-| SPARC implementation | `Skill({ skill: "review" })` — code review before shipping |
-| UI or frontend changes (JSX, CSS, Tailwind) | `Skill({ skill: "sb-design-audit" })` — design token audit before commit |
-| User asks for QA or site testing | `Skill({ skill: "qa" })` — automated browser testing with fixes; use `Skill({ skill: "qa-only" })` to report without fixing |
-| Feature ready to ship | `Skill({ skill: "release-health-gates" })` → then `Skill({ skill: "superpowers:finishing-a-development-branch" })` → then `Skill({ skill: "ship" })` or `Skill({ skill: "land-and-deploy" })` — validation + conflicts check + deploy |
+---
 
-> There is no "trivial" escape hatch. verification-before-completion runs every time.
-> If verification-before-completion fails, the Mid-Execution Bug Protocol runs — not an inline patch.
-> `cso` and `benchmark` are conditional but not optional — if the gate condition is true, they run.
+### Step 2.1 — Verification (always, every task)
+
+```
+Skill({ skill: "superpowers:verification-before-completion" })
+```
+
+**IRON LAW: evidence before assertions. No completion claims without running this.**
+
+| Result | Action |
+|--------|--------|
+| PASS | Continue to Step 2.2 |
+| FAIL (test failure, build error, runtime exception) | → Mid-Execution Bug Protocol → back to Step 2.1 |
+
+---
+
+### Step 2.2 — Security Audit (conditional)
+
+**Run if:** feature touches auth, payments, RLS, user data, encryption, or sessions.
+
+```
+Skill({ skill: "cso" })
+```
+
+| Finding severity | Action |
+|-----------------|--------|
+| P0/P1 — data leak, broken auth, RLS bypass | → Mid-Execution Bug Protocol → back to Step 2.1 |
+| P2 — code-level issue (unsafe query, missing validation) | Fix inline → `sb-verify` → back to Step 2.2 (max 2 cycles; escalate if still failing) |
+| P3/P4 — hardening suggestion, future improvement | Add to TODOS.md → continue to Step 2.3 |
+
+---
+
+### Step 2.3 — Performance (conditional)
+
+**Run if:** PWA, mobile rendering, data-heavy query, network call, or animation changed.
+
+```
+Skill({ skill: "benchmark" })
+```
+
+| Result | Action |
+|--------|--------|
+| No regression | Continue to Step 2.4 |
+| Regression detected | Fix inline → `sb-verify` → back to Step 2.3 |
+
+---
+
+### Step 2.4 — Code Review (conditional)
+
+**Run if:** Single Subagent or SPARC was the execution path. Skip after SDD (SDD has 2N+1 built-in reviews).
+
+```
+Skill({ skill: "review" })
+// optionally: Skill({ skill: "codex" }) for complex logic — second model opinion
+```
+
+| Finding severity | Action |
+|-----------------|--------|
+| CLEAN — no issues | Continue to Step 2.5 |
+| P1 — logic bug, data corruption, security hole | → Mid-Execution Bug Protocol → back to Step 2.1 |
+| P2 — code quality (dead code, N+1, stale comment, missing test) | Fix inline → `sb-verify` → back to Step 2.4 (max 1 re-review; if still P2 after fix, escalate to user) |
+| P3/P4 — style, naming, future improvement | Add to TODOS.md → continue to Step 2.5 |
+
+---
+
+### Step 2.5 — Design Audit (conditional)
+
+**Run if:** any JSX, TSX, or CSS file was changed.
+
+```
+Skill({ skill: "sb-design-audit" })
+```
+
+| Finding | Action |
+|---------|--------|
+| CLEAN | Continue to Step 2.6 |
+| Blocking (wrong design token, missing `formatINR`, broken Zustand selector, touch target < 44px) | Fix inline → `sb-verify` → back to Step 2.5 |
+| Non-blocking (minor warning) | Note in commit message → continue to Step 2.6 |
+
+---
+
+### Step 2.6 — Learning Capture (always, after all gates pass)
+
+**Every task produces something worth remembering or confirming. Capture it before shipping.**
+
+Run these in order:
+
+1. **Did the Mid-Execution Bug Protocol fire?**
+   → Append the root cause to `learnings.md` — format: `[date] context: task — lesson`
+   → Add to the relevant skill's `## Lessons Learned` (sb-react-patterns, sb-tds-rules, etc.)
+
+2. **Did any gate find a non-obvious issue?**
+   → Append to `learnings.md` if it would surprise a future dev
+
+3. **Was a new domain rule, invariant, or gotcha discovered?**
+   → Add to the relevant domain skill's `## Lessons Learned`
+   → Update `docs/BUSINESS_LOGIC.md` if it's a business rule (G-domain gate)
+
+4. **Log session outcome** (required — this feeds `sb-skill-distill`):
+   Append one line to `docs/session-outcomes.jsonl`:
+   ```json
+   {
+     "date": "YYYY-MM-DD",
+     "branch": "<current branch>",
+     "session_summary": "<2-4 words>",
+     "phase_used": "<direct|single-subagent|subagent-driven|sparc>",
+     "skills_invoked": ["<list>"],
+     "bug_protocol_triggered": false,
+     "build_passed": true,
+     "tests_passed": true,
+     "outcome": "success|partial|blocked"
+   }
+   ```
+
+5. **If nothing non-obvious happened** — still write the outcome line (step 4). Skip learnings.md.
+
+> This step is what makes the skill system smarter over time. Skipping it is technical debt.
+
+---
+
+### Step 2.7 — QA (conditional)
+
+**Run if:** user explicitly asked to test the live app, or verification-before-completion passed but you're uncertain about integration.
+
+```
+Skill({ skill: "qa" })        // find AND fix bugs
+Skill({ skill: "qa-only" })   // report bugs only, no fixing
+```
+
+| Result | Action |
+|--------|--------|
+| No bugs | Continue to Step 2.8 |
+| Bugs found (qa fixes them) | Re-run Step 2.1 (verification) to confirm fixes |
+
+---
+
+### Step 2.8 — Ship Gate (when feature is ready to land)
+
+**All gates above must have passed before this runs.**
+
+```
+Skill({ skill: "release-health-gates" })
+  → Skill({ skill: "superpowers:finishing-a-development-branch" })
+  → Skill({ skill: "ship" }) or Skill({ skill: "land-and-deploy" })
+```
+
+If more plan tasks remain — stop here, do NOT ship mid-plan. Return to Phase 1 for the next task.
+
+> There is no "trivial" escape hatch. Every step in Phase 2 runs for its condition.
+> The fix loops in Steps 2.2–2.5 have explicit max-cycle limits to prevent infinite loops.
+> Step 2.6 (Learning Capture) runs after all gates — never skip it.
 
 ---
 
@@ -248,13 +385,26 @@ sb-orchestrate
   Phase 1 ──► test-driven-development (TDD gate — any logic)
   Phase 1/2 ► Mid-Execution Bug Protocol (bug found during running)
                └──► investigate + systematic-debugging → loop back to Phase 2
-  Phase 2 ──► verification-before-completion (IRON LAW — always)
-               └── if fails → Mid-Execution Bug Protocol
-  Phase 2 ──► cso                (auth/payments/RLS/user-data features)
-  Phase 2 ──► benchmark          (performance-sensitive changes)
-  Phase 2 ──► review             (post-Single-Subagent or post-SPARC only; NOT after SDD — SDD has 3 built-in reviews per task)
-  Phase 2 ──► sb-design-audit    (post-UI work)
-  Phase 2 ──► release-health-gates → finishing-a-development-branch → ship or land-and-deploy
+  Phase 2 ──► Step 2.1: verification-before-completion (IRON LAW — always first)
+               └── FAIL → Mid-Execution Bug Protocol → back to Step 2.1
+  Phase 2 ──► Step 2.2: cso (auth/payments/RLS features)
+               ├── P0/P1 → Mid-Execution Bug Protocol → back to Step 2.1
+               └── P2 → fix → sb-verify → back to Step 2.2 (max 2 cycles)
+  Phase 2 ──► Step 2.3: benchmark (perf-sensitive changes)
+               └── regression → fix → sb-verify → back to Step 2.3
+  Phase 2 ──► Step 2.4: review (Single Subagent / SPARC only; skip after SDD)
+               ├── P1 → Mid-Execution Bug Protocol → back to Step 2.1
+               ├── P2 → fix → sb-verify → back to Step 2.4 (max 1 re-review)
+               └── P3/P4 → TODOS.md → continue
+  Phase 2 ──► Step 2.5: sb-design-audit (any JSX/CSS change)
+               ├── blocking → fix → sb-verify → back to Step 2.5
+               └── non-blocking → note → continue
+  Phase 2 ──► Step 2.6: Learning Capture (ALWAYS — feeds sb-skill-distill)
+               └── learnings.md + session-outcomes.jsonl + domain skill Lessons Learned
+  Phase 2 ──► Step 2.7: qa / qa-only (conditional — user-requested or integration uncertainty)
+               └── bugs found → re-run Step 2.1
+  Phase 2 ──► Step 2.8: release-health-gates → finishing-a-development-branch → ship / land-and-deploy
+               └── only when ALL steps above passed AND no more plan tasks remain
   Phase 3 ──► canary             (post-deploy monitoring — always)
   Phase 3 ──► design-review      (live visual audit — UI features)
   Phase 3 ──► document-release   (docs/changelog post-ship — always)
@@ -372,7 +522,7 @@ Update rules governed by `sb-skill-feedback` skill. Summary:
 - **Safe to add:** new pre-routing task types, new rows in CLAUDE.md's auto-invoke table (domain signals live there now), new model tier rows, new `## Lessons Learned` entries
 - **Breaking changes:** require version bump + user approval + migration note
 
-Current version: 1.1 (added Phase 3 Post-Ship, cso+benchmark+codex in Phase 2, 8 new Pre-Routing rows)
+Current version: 1.2 (Phase 2 rewritten as ordered steps 2.1–2.8 with explicit fix loops + Learning Capture)
 
 ## Lessons Learned
 
@@ -383,3 +533,4 @@ Current version: 1.1 (added Phase 3 Post-Ship, cso+benchmark+codex in Phase 2, 8
 - [2026-05-20] eng audit v2: pipeline had no post-ship phase — canary, design-review, document-release, retro were all installed but unwired; added Phase 3 to close the ops lane; also added cso + benchmark to Phase 2 (pre-implementation owasp-security ≠ post-implementation security audit), codex as second-opinion option, and 8 new Pre-Routing rows (qa-only, land-and-deploy, canary, retro, codex, health) to match full gstack skill set.
 - [2026-05-20] eng audit: dual routing tables (CLAUDE.md auto-invoke + sb-orchestrate Phase 0.5) were identical and diverging independently — removed Phase 0.5 table from sb-orchestrate; CLAUDE.md now owns domain routing, sb-orchestrate owns execution orchestration only; also removed unreachable SPARC section from Phase 1, collapsed Parallel Agents to a stub, added tiny-task fast path to Pre-Routing, and broadened sb-react-patterns trigger in CLAUDE.md to catch all JSX pages.
 - [2026-06-02] token audit: Phase 2 `review` was firing after `subagent-driven-development` creating a 4th review pass (SDD already runs spec+quality review per task + final review = 2N+1 reviews). Added dedup guard: skip `review` in Phase 2 when SDD was the execution path. Also: SDD was used for plans with ≤2-file tasks — moved Single Subagent preference above SDD with explicit file-count trigger. Added mandatory test coverage rule to SDD code quality reviewer (fail if logic added without tests).
+- [2026-06-04] flow audit: Phase 2 was a flat table — review/cso/sb-design-audit findings had no fix path; after any gate found an issue there was nothing to do. Rewrote Phase 2 as ordered steps 2.1–2.8 with explicit P1/P2/P3 routing per finding severity, max-cycle fix loops (2.2 max 2 cycles, 2.4 max 1 re-review), and a mandatory Step 2.6 Learning Capture that feeds learnings.md + session-outcomes.jsonl + domain skill Lessons Learned before every ship.
