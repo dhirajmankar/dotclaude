@@ -1,6 +1,7 @@
 ---
 name: "sb-design-audit"
 description: "StudioBooks design audit — AUTOMATICALLY invoke before committing any .jsx, .tsx, or .css file in this project. Never commit UI changes without running this first. Triggers: before staging component files, after editing pages or components, before any PR with UI changes, when a page looks visually broken. Checks stale tokens, broken Zustand selectors, missing formatINR, touch target violations."
+model: sonnet
 ---
 
 # sb-design-audit — Design Audit

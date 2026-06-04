@@ -1,6 +1,7 @@
 ---
 name: "sb-skill-creator"
 description: "StudioBooks skill lifecycle manager — AUTOMATICALLY invoke when creating any new skill for this project. Runs gap analysis and impact assessment first, then delegates to the skill-creator plugin for drafting, testing, and iterative improvement, then wires the finished skill into dotclaude + CLAUDE.md. Never create a StudioBooks skill without running this — it prevents duplicate skills, low-impact skills, and skills that don't get wired into the auto-invocation chain."
+model: sonnet
 auto-invokes:
   - skill-creator   # plugin — handles drafting, test cases, eval loop, description optimisation
   - sb-skill-audit  # verify the new skill doesn't duplicate existing ones

@@ -1,6 +1,7 @@
 ---
 name: "sb-deal-stages"
 description: "StudioBooks deal pipeline state machine — AUTOMATICALLY invoke when working on pipeline stages, stage transitions, drag-drop kanban, DealDetail stage progression, or deal status logic. Triggers: 'update stage', 'pipeline', 'kanban', 'deal stages', 'drag-drop', 'stage transition', 'mark as paid'. Encodes the 6 authoritative stages, allowed transitions, required fields per transition, free-tier limits, and the known addDeal/createDeal naming bug."
+model: haiku
 ---
 
 # sb-deal-stages — Deal Pipeline State Machine

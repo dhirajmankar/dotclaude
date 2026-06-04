@@ -1,6 +1,7 @@
 ---
 name: "sb-react-patterns"
-description: "StudioBooks React patterns — AUTOMATICALLY invoke for any JSX/TSX file: any component, any page (Dashboard, Settings, Referrals, Contacts, Calendar, Deals, Invoices, or any other), any hook, any Tailwind class work, or any store interaction. Triggered by: useState, useEffect, useMemo, Zustand store hooks, location.state prefill, navigation items, currency display. Encodes production failures from learnings.md — prevents infinite render loops, ESLint violations, and broken prefill flows specific to this codebase."
+description: "StudioBooks React patterns — invoke for new components/pages/hooks or existing JSX/TSX files with state/effect/store/pattern changes. Skip for label, copy, or style-only edits. Triggered by: useState, useEffect, useMemo, Zustand store hooks, location.state prefill, navigation items, currency display. Encodes production failures from learnings.md — prevents infinite render loops, ESLint violations, and broken prefill flows specific to this codebase."
+model: haiku
 ---
 
 # sb-react-patterns — StudioBooks React Patterns
@@ -179,3 +180,6 @@ Current version: 1.0
 - [2026-05-20] distillation: promoted from learnings.md session 2 — `location.state` prefill must be read at `useState` initialization time (`useState(location.state?.prefill ?? {})`), never inside `useEffect` with a setState call; the ESLint `react-hooks/set-state-in-effect` rule flags it and the useEffect approach causes an extra render cycle.
 - [2026-05-20] distillation: promoted from learnings.md session 2 — `useMemo` first argument must always be an inline function expression `useMemo(() => fn(), [deps])`, never a named function reference `useMemo(fn, [deps])`; the rule exists so eslint-plugin-react-hooks can statically analyze dependencies.
 - [2026-05-20] distillation: promoted from learnings.md session 2 — never omit planned-but-incomplete nav items entirely; use the `NavItemSoon` pattern (cursor-default, opacity-40, Lock icon) to signal future availability without routing users into broken stubs.
+- [2026-06-04] distillation: gstack pitfall cross-store-setState — never call `useOtherStore.setState()` from inside a store action; add a dedicated action (e.g. `prependEntry`) to the target store and call via `getState().prependEntry()` — direct setState bypasses the store's own guards and is invisible to devtools.
+- [2026-06-04] distillation: gstack pitfall masked-input-readOnly-empty — always check `hasValue` before applying `readOnly` behavior on masked inputs; empty fields must remain editable for new users, so `readOnly` should be `!revealed && hasValue`, not `!revealed`.
+- [2026-06-04] distillation: gstack pitfall dashboard-zero-on-refresh — never mark an animation or derived value as "done" when the source value is 0 (initial store state before async data loads); treat target===0 as pending, not complete, and re-sync when the real data arrives.

@@ -1,6 +1,7 @@
 ---
 name: sb-graph-navigate
 description: Graph-first file discovery for StudioBooks. Given a symbol or feature area, uses graphify BFS traversal on the pre-built knowledge graph to return exactly which files to read — 85% cheaper than Glob→Grep→Read. Falls back to smart-explore when graph gives no results.
+model: haiku
 ---
 
 # sb-graph-navigate
@@ -101,3 +102,4 @@ Current version: 1.0
 <!-- Format: - [YYYY-MM-DD] context: <task> — <one sentence lesson>. -->
 - [2026-05-20] distillation: promoted from learnings.md session 3 — `graphify query "symbol"` returns exact file paths in ~500 tokens; a Glob→Grep→Read sweep of the same symbol costs 15k–40k tokens; always use graph-first even when you think you know the file, because the graph also catches indirect references.
 - [2026-05-20] distillation: promoted from learnings.md session 5 — when graph returns 0 nodes for a newly created component, the graph hasn't been rebuilt since the file was written; trigger `npm run graph:rebuild` rather than falling back to Grep; the PostToolUse hook should have done it automatically but async hooks can lag on Windows.
+- [2026-06-04] distillation: atomic file reading — after a graph lookup, read only the files identified in NODE src= lines; never open 4-6 files speculatively as "warm-up"; most changes touch 1-2 files and the graph already surfaces the indirect references that would otherwise require a Glob sweep.

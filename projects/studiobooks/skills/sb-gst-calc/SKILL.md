@@ -1,6 +1,7 @@
 ---
 name: "sb-gst-calc"
 description: "StudioBooks GST calculation rules — AUTOMATICALLY invoke when computing invoice totals, modifying taxCalc.js, building invoice UI, fixing GST display, or handling supply type logic. Triggers: invoice amount calculation, CGST/SGST/IGST split, place of supply, export of services, SAC code selection. Encodes rounding rules, intra/inter split, zero-rating for exports, and the exact Total Payable formula."
+model: haiku
 ---
 
 # sb-gst-calc — GST Calculation Rules

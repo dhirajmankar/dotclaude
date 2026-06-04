@@ -1,6 +1,7 @@
 ---
 name: "sb-deal-build"
 description: "StudioBooks deal feature builder — AUTOMATICALLY invoke for any deal, brand deal, pipeline, kanban, DealForm, DealDetail, drag-drop, or deal CRUD work. Routes to authoritative sub-skills. Never build deal features without reading these rules first — the stage machine and financial formulas have invariants that are easy to break."
+model: haiku
 auto-invokes:
   - sb-deal-stages   # Pipeline state machine (10 stages, valid transitions)
   - sb-deal-calc     # Deal financial calculation formulas

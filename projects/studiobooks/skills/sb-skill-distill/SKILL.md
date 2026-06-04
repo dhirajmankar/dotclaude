@@ -220,3 +220,5 @@ Current version: 1.0
 ## Lessons Learned
 
 <!-- Format: - [YYYY-MM-DD] context: <task> — <one sentence lesson>. -->
+- [2026-06-04] distillation run: sprint feat/sac-ca-export → feat/deal-invoice-v2 — applied 7 gstack pitfall learnings to sb-react-patterns, sb-tds-rules, sb-invoice-tax, sb-graph-navigate; assigned model: haiku to 10 reference/orchestration skills and model: sonnet to 3 quality-judgment skills; narrowed sb-react-patterns trigger to skip label/copy/style-only edits.
+- [2026-06-04] distillation meta: the gstack pitfall log (gstack-learnings-log with type=pitfall) is the richest source of distillation candidates — it captures exact file names, confidence scores, and reproduction conditions; always read it in Step 1d before identifying candidates.

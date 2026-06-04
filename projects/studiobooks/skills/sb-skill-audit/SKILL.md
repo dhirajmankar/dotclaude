@@ -1,6 +1,7 @@
 ---
 name: "sb-skill-audit"
 description: "StudioBooks skill graph audit — invoke before any PR, when skills feel stale or not auto-firing correctly, or after adding a new skill. Verifies all CLAUDE.md triggers are covered by skill descriptions, no conflicts exist between skills, and all sb-* skills have Feedback Protocol and Lessons Learned sections. Reports coverage gaps and consistency issues."
+model: sonnet
 ---
 
 # sb-skill-audit — Skill Graph Audit

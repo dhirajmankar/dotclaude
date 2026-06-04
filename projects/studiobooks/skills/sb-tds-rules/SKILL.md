@@ -1,6 +1,7 @@
 ---
 name: "sb-tds-rules"
 description: "StudioBooks TDS rules — AUTOMATICALLY invoke when modifying TDS display, income threshold alerts, tds_records writes, Dashboard earned-amount, or any Section 194J/392 logic. Triggers: TDS rate dropdown, income warning thresholds, Form 16A, quarterly TDS tracking, financial year boundaries. Encodes April 2026 Income Tax Act 2025 section renaming, ₹50,000 threshold, and dual section references for transition period."
+model: haiku
 ---
 
 # sb-tds-rules — TDS Application Rules
@@ -167,3 +168,5 @@ Current version: 1.0
 
 <!-- Entries added after each invocation where a new edge case, canonical pattern, or rule clarification was discovered. -->
 <!-- Format: - [YYYY-MM-DD] context: <task> — <one sentence lesson>. -->
+- [2026-06-04] distillation: gstack pitfall fy-format-mismatch — `tdsService.getCurrentFinancialYear()` returns `2025-26` (short suffix) but `dateUtils.getCurrentFinancialYear()` returns `2025-2026` (full year); always use the tdsService version when querying the `financial_year` DB column or you get zero rows.
+- [2026-06-04] distillation: gstack pitfall fy-format-mismatch — affected files: tdsStore.js, tdsService.js, dateUtils.js; the mismatch is silent — queries succeed but return empty arrays.

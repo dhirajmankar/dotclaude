@@ -1,6 +1,7 @@
 ---
 name: "sb-skill-feedback"
 description: "StudioBooks skill update protocol — invoke before proposing any change to an existing sb-* skill. Defines immutable zones (never touch), addable zones (always safe), and the breaking-change protocol (requires user approval + version bump). Also invoked automatically after any skill is used, to decide whether a Lessons Learned entry should be added."
+model: haiku
 ---
 
 # sb-skill-feedback — Skill Update Protocol

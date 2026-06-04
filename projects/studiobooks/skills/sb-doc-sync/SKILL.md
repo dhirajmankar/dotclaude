@@ -1,6 +1,7 @@
 ---
 name: "sb-doc-sync"
 description: "StudioBooks documentation sync — invoke ONCE per session via sb-session-end Step 2 only. Do NOT auto-invoke after individual tasks mid-session. Can also be run standalone with /sb-doc-sync when docs feel stale between sessions. Updates 8 files: CLAUDE.md, CONTEXT.md, memory/project_status.md, README.md, ARCHITECTURE.md, STORES.md, BUSINESS_LOGIC.md — stale sections only. File 8 (DECISIONS.md) updates only when architecture-decision was invoked."
+model: haiku
 ---
 
 # sb-doc-sync — Documentation Sync

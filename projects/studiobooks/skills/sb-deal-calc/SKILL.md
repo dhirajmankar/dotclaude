@@ -1,6 +1,7 @@
 ---
 name: "sb-deal-calc"
 description: "StudioBooks deal financial calculations — AUTOMATICALLY invoke when computing or displaying earned income, pending payments, overdue deals, active deal count, upcoming deadlines, or invoice follow-ups. Triggers: 'earned this month', 'pending payment', 'overdue', 'active deals', 'dashboard stats', 'invoice follow-up', 'upcoming deadlines'. Encodes authoritative formulas from useDeals.js — never duplicate these in components."
+model: haiku
 ---
 
 # sb-deal-calc — Deal Financial Calculations

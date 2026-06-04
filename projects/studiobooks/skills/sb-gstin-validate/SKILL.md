@@ -1,6 +1,7 @@
 ---
 name: "sb-gstin-validate"
 description: "StudioBooks GSTIN validation rules — AUTOMATICALLY invoke any time code reads, writes, or validates a GSTIN or PAN field: supplier_gstin, client_gstin, profile gst_number, PAN extraction. Triggers: adding GSTIN input, validating tax fields, Settings profile form, invoice save logic. Encodes format rules, checksum algorithm, DPDP data handling, and fallback behaviour for missing GSTINs."
+model: haiku
 ---
 
 # sb-gstin-validate — GSTIN Validation Rules

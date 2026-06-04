@@ -1,6 +1,7 @@
 ---
 name: "sb-commit"
 description: "StudioBooks smart commit — ALWAYS use this instead of running git commit directly in this project. Never run git commit manually. Triggers: whenever about to commit, after a task is done, after a bug fix, after any code change that should be saved. Runs sb-verify first, then stages and commits with correct Co-Authored-By footer. Takes a type and message."
+model: haiku
 ---
 
 # sb-commit — Smart Commit
