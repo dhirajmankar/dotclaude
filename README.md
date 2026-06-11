@@ -105,6 +105,7 @@ Claude Code loads skills from two places:
 | `sb-verify` | Lint + build + test gate |
 | `sb-doc-sync` | Diff-based sync of 8 mandatory docs (7 + DECISIONS.md on arch changes) |
 | `sb-design-audit` | Pre-commit design token checker |
+| `ui-ux-mindset` | Kole Jain's 4-question pre-design framework, 60-30-10 color rules, 11 CSS micro-animation recipes |
 | `sb-invoice-tax` | Invoice + tax knowledge hub (routes to sub-skills) |
 | `sb-gst-calc` | GST calculation rules |
 | `sb-tds-rules` | TDS rules (Income Tax Act 2025) |
