@@ -1,15 +1,16 @@
 ---
 name: ui-ux-mindset
-description: "AUTOMATICALLY invoke when working on any UI layout, visual styling, color decisions, component animations, dashboard design, or frontend implementation touching .jsx/.tsx/.css. Enforces Kole Jain's strategic 4-question pre-design framework, content-first edge-case design, 60-30-10 color rule with exact hex values, 5 vibe-coding anti-patterns, and provides all 11 ready-to-paste micro-animation CSS recipes."
+description: "AUTOMATICALLY invoke when working on any UI layout, visual styling, color decisions, component animations, dashboard design, or frontend implementation touching .jsx/.tsx/.css. Enforces Kole Jain's strategic 4-question pre-design framework, content-first edge-case design, 60-30-10 color rule with exact hex values, 5 vibe-coding anti-patterns, product design mindset (all states, flows, systems), typography golden-ratio system, dashboard-specific rules, shadow/overlay discipline, and all 11 ready-to-paste micro-animation CSS recipes."
 metadata:
   author: KoleJain-DeepSynthesis
-  version: "2.0.0"
+  version: "3.0.0"
   source: docs/UI_UX_MINDSET_GUIDE.md
 ---
 
-# UI/UX Mindset & Execution Skill (Kole Jain) v2.0
+# UI/UX Mindset & Execution Skill (Kole Jain) v3.0
 
 > "Think of web design not as art, but as a story." — Kole Jain
+> "Good UI signifies how things work — users shouldn't need instructions."
 
 ---
 
@@ -24,13 +25,86 @@ Answer these **4 questions before writing any JSX/CSS/Tailwind**:
 
 **Intersecting Goal Rule:** Business Goal ∩ User Goal = highest visual weight on the page. Place above the fold, dominant color, primary CTA styling.
 
-**Color Quick Rules (never deviate):**
-- Never pure `#FFFFFF` or `#000000` — eye strain. Light canvas: `#F8F9FA`. Dark canvas: `#0F0F11`.
-- 60% canvas / 30% cards+panels+borders / 10% accent (CTAs + active states only).
-- Dark mode elevation = luminescence: cards must be *lighter* than the canvas background.
-- Semantic colors are reserved: Red = destructive only. Yellow/Orange = warning only. Green = success only.
+---
 
-**Vibe-coding Quick Fixes:**
+### Visual Hierarchy Quick Rules
+
+- **Most important = biggest + boldest + most colorful + top-left / above the fold.**
+- Contrast between sizes *creates* hierarchy — big vs small, colorful vs muted.
+- Images always add visual hierarchy and make scanning effortless.
+- Secondary info goes smaller and below. Tertiary info gets muted color (not removed).
+- Price / key metric → top-right, accent color, visually distinct from surrounding text.
+- Icons + lines communicate meaning without adding words (location lines, state dots).
+
+---
+
+### Signifiers & Interaction States — Mandatory
+
+**Good UI communicates affordances without instructions.** Every interactive element must have:
+
+- **Buttons (minimum 4 states):** default → hover → active/pressed → disabled. Add loading state when async.
+- **Inputs (minimum 3 states):** default → focus (border color change) → error (red border + message). Add warning for optional issues.
+- **Any clickable element:** hover state always. Active state always.
+- **Micro-interaction rule:** after any user action, the UI must respond visibly — loading spinner, success chip, state change, animation. *Silence after a click = broken UX.*
+
+Containers, highlights, grays, and borders are all signifiers — use them intentionally to show grouping, selection, and disabled states.
+
+---
+
+### Color Quick Rules (never deviate)
+
+- Never pure `#FFFFFF` or `#000000` — causes eye strain. Light canvas: `#F8F9FA`. Dark canvas: `#0F0F11`.
+- 60% canvas / 30% cards+panels+borders / 10% accent (CTAs + active states only).
+- **Dark mode elevation = luminescence:** cards must be *lighter* than the canvas background. No drop shadows in dark mode.
+- **Semantic colors are reserved:** Red = destructive only. Yellow/Orange = warning only. Green = success only. Blue = trust/info.
+- Use color for purpose, never decoration.
+- Start with one brand primary color → lighten for backgrounds → darken for text. This gives you a natural color ramp.
+
+---
+
+### Typography Quick Rules
+
+- **One font is completely acceptable.** Two at most (display + sans-serif, or sans-serif + serif for captions). Three is pushing it. Four is a design sin.
+- Default to a clean sans-serif. Never use display or handwritten fonts at paragraph size.
+- **Large text (>70–80px):** tighten letter spacing to **-2 to -4%**. Drop line height to **110–120%**. This instantly looks professional.
+- **Paragraph text:** line height ~150%. Letter spacing: auto/0.
+- **Dashboard text:** max font size ~24px (information density). Font size range is much narrower than landing pages.
+- **Golden ratio font scale:** multiply base (16px) by 1.27 (√golden ratio) for each step. Use 1.62 only for dramatic two-level scales (e.g., one header + one body).
+- Font weight + color work together: reducing weight *looks* lighter; reducing opacity *looks* thinner. Use both to control hierarchy.
+
+---
+
+### Spacing & Layout Quick Rules
+
+- **4-point base grid:** all spacing multiples of 4px. 8px grid for larger elements. Consistency always beats exactness.
+- White space is more important than rigid grids. Let elements breathe: 32px between sections, group tightly related items (announcement + headline; headline + subtext).
+- 12-column grids are guidelines for repeating/responsive content — not required for custom landing pages.
+- **Nested corners:** inner border-radius = outer radius − gap between elements. (Outer 30px, gap 10px → inner 20px.) Exception: pill shapes (`border-radius: 9999px`) — skip this formula entirely, the distance is equal all the way around. Formula also breaks down when gap > outer radius; eyeball it.
+- **Lines/dividers:** prefer spacing over lines. If items are spaced enough to be legible, remove the dividers. When tight, use subtle alternating background rows — never lines everywhere.
+
+---
+
+### Shadow & Depth Discipline
+
+- **Light mode:** use drop shadows for depth. Reduce opacity and increase blur — if the shadow is the first thing noticed, it's too strong.
+- **Dark mode:** no drop shadows. Use card background that's *lighter* than canvas (elevation via luminescence).
+- **Dark mode HSB depth recipe:** take canvas color → bump brightness +4–6 → drop saturation -10–20 → that's your card layer. Repeat for nested layers.
+- Light mode only — cards need less shadow than popovers; popovers/modals need stronger shadows than cards.
+- Inner + outer shadows together = tactile "raised" button effect (light mode only).
+
+---
+
+### Image Overlay Rules
+
+- Never put text directly on a photo without an overlay.
+- Option A: full-screen color overlay (dulls the image).
+- Option B (preferred): **linear gradient** — shows image, then transitions smoothly to a text-readable background color.
+- Option C (premium): **progressive blur** on top of the gradient — layered glass effect.
+
+---
+
+### Vibe-coding Quick Fixes
+
 - Emojis in UI → swap for Lucide/Phosphor/Radix SVG icons
 - Infinite scroll → "Load More" button (lets users reach the footer)
 - Sparse flyout/popover → modal dialog with accordion for advanced options
@@ -57,6 +131,26 @@ Answer these **4 questions before writing any JSX/CSS/Tailwind**:
 | Inverted colors for dark mode | Dark canvas + semi-transparent white overlays: `rgba(255,255,255,0.05)` |
 | Beautiful stock image placeholders | Design with the actual data the app will show (tables, real content) |
 | Icon directly on user-uploaded image | Semi-transparent circular backing behind icon to guarantee contrast |
+| Large text with default letter spacing | Tighten kerning to -2 to -4% for text >70px |
+| Same font size range as landing page on a dashboard | Cap dashboard text at 24px max — information density requires tight scale |
+| Drop shadows in dark mode | Elevation via luminescence: lighter card background, not shadow |
+| Lines between every list item | Spacing-only separation — remove lines if items are legible |
+
+---
+
+### State Design Checklist — Design Every State
+
+| Element | Required states |
+|---|---|
+| Button | default, hover, active/pressed, disabled, (loading if async) |
+| Input / field | default, focused, error (red border + message), (warning for optional issues) |
+| Page / screen | empty (zero-state), loading, data loaded, error |
+| List / table | empty state, loading skeleton, populated, (error if fetch fails) |
+| Modal / popover | opening animation, content loaded, action in progress, closed |
+
+**Never design only the happy path.** Employers and users judge products by how they handle edge cases.
+
+---
 
 ### Micro-animation Selector
 
@@ -74,6 +168,8 @@ Answer these **4 questions before writing any JSX/CSS/Tailwind**:
 | Global / page search bar | #10 Search Morph | `width: 42px → 260px` on `:focus` + icon `scale(0.85)` |
 | Pricing plan feature comparison | #11 Upgrade Slider | `translateY(-24px)` swap on `:hover` |
 
+---
+
 ### Color System Reference
 
 | Role | Light Mode | Dark Mode |
@@ -90,6 +186,26 @@ Answer these **4 questions before writing any JSX/CSS/Tailwind**:
 | Warning | `#F59E0B` (Amber) | `#F59E0B` (Amber) |
 | Success | `#10B981` (Emerald) | `#10B981` (Emerald) |
 
+**HSB dark mode depth:** canvas → card: brightness +4–6, saturation -10–20. Repeat for nested layers.
+
+**HSB matching palette recipe:** start with base color → for each richer shade: +20 saturation, -10 brightness. Optionally shift hue ~20 points toward the darker end of the wheel (blues/purples are darkest; yellows/reds are lightest) — skip the hue shift if your base is already near blue/purple to avoid drifting out of brand.
+
+---
+
+### Typography Scale Reference
+
+| Context | Font size cap | Line height | Letter spacing |
+|---|---|---|---|
+| Landing page header | Uncapped (display font OK) | 110–120% | -2 to -4% (if >70px) |
+| Landing page body | — | ~150% | auto |
+| Dashboard header | 24px max | 120–130% | auto (24px is too small for negative tracking) |
+| Dashboard body | 12–16px | 140–150% | auto |
+| Caption / label | 11–13px | auto | +0.5 to +1% (legibility) |
+
+**Golden ratio sizing:** base 16px → multiply by 1.27 per step (√golden ratio). For dramatic two-level scale: multiply by 1.62 (golden ratio).
+
+---
+
 ### Progressive Disclosure Checklist
 
 | Element | Pattern |
@@ -99,6 +215,52 @@ Answer these **4 questions before writing any JSX/CSS/Tailwind**:
 | Long lists / feeds | "Load More" button — never infinite scroll |
 | Settings / billing / account links | Collapsed into a click-triggered popover menu in sidebar |
 | Advanced form options | Accordion, collapsed by default |
+
+---
+
+### Dashboard Design Rules
+
+Dashboards are fundamentally different from landing pages:
+
+- **Font sizes smaller:** max ~24px. Range is tight. No large display text.
+- **Grids strictly followed:** use all available space; every element placed with intention.
+- **Priority grid:** most important content → top-left. Least important → bottom-right.
+- **Above the fold:** don't waste space on navigation chrome when real content can live there.
+- **Cut redundancy aggressively:** two elements doing the same job → remove one.
+- **Sidebar = spine of the product:** navigation, profile, search, settings. Collapsible with icon-only mode.
+- **Data always needs context:** labels, axis titles, legends. Never raw numbers without context.
+- **Charts:** grid lines + time selectors + data labels. Curved lines on line graphs = misleading. Fading chart lines = worse.
+
+**Overlay types (when to use what):**
+
+| Type | When to use | Behavior |
+|---|---|---|
+| Popover | Simple, non-blocking context | Click away to dismiss |
+| Modal | Complex context, blocking action | Must click Confirm or Cancel |
+| Toast | Non-blocking system notification, warnings, errors | Auto-dismisses |
+| New page | Permanent or very large context | Requires breadcrumb or back button |
+
+**Optimistic UI:** update UI instantly and assume server success — but always implement rollback on server failure (revert the UI + show a toast error). Don't make users wait for a spinner after every action, but never leave the UI in a wrong state silently.
+
+---
+
+### Product Design Mindset
+
+The difference between a UI designer and a product designer:
+
+- **UI designer:** decorates a single room.
+- **Product designer:** designs the flow, function, wiring, and how it all connects.
+
+**Three product design laws:**
+
+1. **Design all states, not just happy path.** Empty states, loading states, success messages, error states — these define the experience as much as the populated screen.
+2. **Think in screens and sequences, not sections.** Ask: how did the user get here? What do they need next? Chain transitions together intentionally.
+3. **Design systems = trust and speed.** Consistent buttons, spacing, text styles across all contexts let users build muscle memory. Every new screen should feel familiar because it reuses the same components.
+
+**Empty state checklist:**
+- Message explaining why the state is empty
+- Clear call-to-action to get started
+- Optional: subtle illustration or animation (not stock art)
 
 ---
 
@@ -569,9 +731,11 @@ Hovering a pricing card swaps the current limit out and the upgraded limit in vi
 }
 
 .limit-base    { color: #64748b; opacity: 1; }
-.limit-upgrade { color: #8b5cf6; opacity: 0; transform: translateY(24px); }
+/* translateY(0) = already at y:24px in flow (below .limit-base), so it sits just outside the 24px container */
+.limit-upgrade { color: #8b5cf6; opacity: 0; transform: translateY(0); }
 
 .price-slider-card:hover .limit-base    { opacity: 0; transform: translateY(-24px); }
+/* translateY(-24px) shifts upgrade from y:24px → y:0, sliding it into the visible window */
 .price-slider-card:hover .limit-upgrade { opacity: 1; transform: translateY(-24px); }
 ```
 
@@ -584,4 +748,8 @@ Hovering a pricing card swaps the current limit out and the upgraded limit in vi
   - Long titles → text truncation or graceful wrapping
   - Icons on user-uploaded images → add semi-transparent circular backing for guaranteed contrast
   - Empty states → design the zero-state, not just the happy path
+  - Loading states → skeleton screens or spinners, never blank whitespace
+  - Error states → clear message + recovery action
 - **Progressive Disclosure:** Only show what the user needs now. Reveal more as required.
+- **Labels are a last resort:** if your UI is clear enough, the label shouldn't be needed. Group by meaning instead.
+- **Remove redundancy aggressively:** two elements doing the same thing → keep the better one, remove the other.
