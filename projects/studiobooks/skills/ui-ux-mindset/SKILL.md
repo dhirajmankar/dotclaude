@@ -66,7 +66,7 @@ Containers, highlights, grays, and borders are all signifiers — use them inten
 
 - **One font is completely acceptable.** Two at most (display + sans-serif, or sans-serif + serif for captions). Three is pushing it. Four is a design sin.
 - Default to a clean sans-serif. Never use display or handwritten fonts at paragraph size.
-- **Large text (>70–80px):** tighten letter spacing to **-2 to -3%** (or -2 to -4% via kerning). Drop line height to **110–120%**. This instantly looks professional.
+- **Large text (>70–80px):** tighten letter spacing to **-2 to -4%**. Drop line height to **110–120%**. This instantly looks professional.
 - **Paragraph text:** line height ~150%. Letter spacing: auto/0.
 - **Dashboard text:** max font size ~24px (information density). Font size range is much narrower than landing pages.
 - **Golden ratio font scale:** multiply base (16px) by 1.27 (√golden ratio) for each step. Use 1.62 only for dramatic two-level scales (e.g., one header + one body).
@@ -79,7 +79,7 @@ Containers, highlights, grays, and borders are all signifiers — use them inten
 - **4-point base grid:** all spacing multiples of 4px. 8px grid for larger elements. Consistency always beats exactness.
 - White space is more important than rigid grids. Let elements breathe: 32px between sections, group tightly related items (announcement + headline; headline + subtext).
 - 12-column grids are guidelines for repeating/responsive content — not required for custom landing pages.
-- **Nested corners:** inner border-radius = outer radius − gap between elements. (Outer 30px, gap 10px → inner 20px.)
+- **Nested corners:** inner border-radius = outer radius − gap between elements. (Outer 30px, gap 10px → inner 20px.) Exception: pill shapes (`border-radius: 9999px`) — skip this formula entirely, the distance is equal all the way around. Formula also breaks down when gap > outer radius; eyeball it.
 - **Lines/dividers:** prefer spacing over lines. If items are spaced enough to be legible, remove the dividers. When tight, use subtle alternating background rows — never lines everywhere.
 
 ---
@@ -89,8 +89,8 @@ Containers, highlights, grays, and borders are all signifiers — use them inten
 - **Light mode:** use drop shadows for depth. Reduce opacity and increase blur — if the shadow is the first thing noticed, it's too strong.
 - **Dark mode:** no drop shadows. Use card background that's *lighter* than canvas (elevation via luminescence).
 - **Dark mode HSB depth recipe:** take canvas color → bump brightness +4–6 → drop saturation -10–20 → that's your card layer. Repeat for nested layers.
-- Cards need less shadow than popovers; popovers/modals need stronger shadows than cards.
-- Inner + outer shadows together = tactile "raised" button effect.
+- Light mode only — cards need less shadow than popovers; popovers/modals need stronger shadows than cards.
+- Inner + outer shadows together = tactile "raised" button effect (light mode only).
 
 ---
 
@@ -188,7 +188,7 @@ Containers, highlights, grays, and borders are all signifiers — use them inten
 
 **HSB dark mode depth:** canvas → card: brightness +4–6, saturation -10–20. Repeat for nested layers.
 
-**HSB matching palette recipe:** start with base color → for each darker shade: +20 saturation, -10 brightness, slide hue 20 points toward blue/purple.
+**HSB matching palette recipe:** start with base color → for each richer shade: +20 saturation, -10 brightness. Optionally shift hue ~20 points toward the darker end of the wheel (blues/purples are darkest; yellows/reds are lightest) — skip the hue shift if your base is already near blue/purple to avoid drifting out of brand.
 
 ---
 
@@ -198,7 +198,7 @@ Containers, highlights, grays, and borders are all signifiers — use them inten
 |---|---|---|---|
 | Landing page header | Uncapped (display font OK) | 110–120% | -2 to -4% (if >70px) |
 | Landing page body | — | ~150% | auto |
-| Dashboard header | 24px max | 120–130% | -1 to -2% |
+| Dashboard header | 24px max | 120–130% | auto (24px is too small for negative tracking) |
 | Dashboard body | 12–16px | 140–150% | auto |
 | Caption / label | 11–13px | auto | +0.5 to +1% (legibility) |
 
@@ -240,7 +240,7 @@ Dashboards are fundamentally different from landing pages:
 | Toast | Non-blocking system notification, warnings, errors | Auto-dismisses |
 | New page | Permanent or very large context | Requires breadcrumb or back button |
 
-**Optimistic UI:** assume server success, update UI instantly. Don't make users wait for a spinner after every action.
+**Optimistic UI:** update UI instantly and assume server success — but always implement rollback on server failure (revert the UI + show a toast error). Don't make users wait for a spinner after every action, but never leave the UI in a wrong state silently.
 
 ---
 
@@ -731,9 +731,11 @@ Hovering a pricing card swaps the current limit out and the upgraded limit in vi
 }
 
 .limit-base    { color: #64748b; opacity: 1; }
-.limit-upgrade { color: #8b5cf6; opacity: 0; transform: translateY(24px); }
+/* translateY(0) = already at y:24px in flow (below .limit-base), so it sits just outside the 24px container */
+.limit-upgrade { color: #8b5cf6; opacity: 0; transform: translateY(0); }
 
 .price-slider-card:hover .limit-base    { opacity: 0; transform: translateY(-24px); }
+/* translateY(-24px) shifts upgrade from y:24px → y:0, sliding it into the visible window */
 .price-slider-card:hover .limit-upgrade { opacity: 1; transform: translateY(-24px); }
 ```
 
