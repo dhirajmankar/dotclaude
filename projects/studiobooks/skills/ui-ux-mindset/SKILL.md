@@ -5,6 +5,8 @@ metadata:
   author: KoleJain-DeepSynthesis
   version: "3.0.0"
   source: docs/UI_UX_MINDSET_GUIDE.md
+auto-invokes:
+  - design-visual-psychology  # pre-design psychology companion: symbolic interaction, shape/color science, LIFT layout system, emotional polarity
 ---
 
 # UI/UX Mindset & Execution Skill (Kole Jain) v3.0
