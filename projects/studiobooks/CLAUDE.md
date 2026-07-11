@@ -136,59 +136,31 @@ Two knowledge graphs are always available and auto-refreshed after every file ed
 
 ## Auto-invoked skills — mandatory, no prompting needed
 
-These skills MUST be invoked automatically via the Skill tool without being asked. Invoking them is NOT optional.
+These skills MUST be invoked automatically via the Skill tool without being asked. Invoking them is NOT optional. (Consolidated 2026-07-11: 44 rows → 12 core rows; everything else is on-demand below. The authoritative copy of this table lives in `StudioBooks/CLAUDE.md` — sync.ps1 does not copy this file; keep the two in step manually.)
 
-| Trigger | Skill to invoke |
-|---------|----------------|
-| Before reading any named symbol, store, component, hook, or feature area | `sb-graph-navigate` — run `graphify query "<name>" --budget 1000`, parse NODE `src=` lines, read only those files; falls back to smart-explore if 0 nodes returned |
-| Before reading code when query is open-ended or sb-graph-navigate returned 0 nodes | `smart-explore` — tree-sitter AST search; `smart_search` first, then `smart_unfold` on demand; never read whole files upfront |
-| Architecture question, "how does X connect to Y", duplication audit, before major refactor | `pathfinder` — maps feature flowcharts, finds duplicated concerns, emits `/make-plan` prompts; also consult `docs/FINDINGS.md` |
-| Starting any implementation task touching > 1 file or > 1 step (feature, fix, refactor, new feature, new page, redesign) | `sb-orchestrate` — it decides: brainstorm first? SPARC? subagent-driven? direct? |
-| Bug, error, unexpected behavior, "why is X broken", "this doesn't work" | `investigate` — diagnose before implementing; do NOT go to sb-orchestrate first |
-| New product idea, concept, "should we build X", "what if we added Y" | `office-hours` (gstack) — CEO-perspective idea review before brainstorming |
-| Strategy, scope, "what should we build", ambition question | `plan-ceo-review` (gstack) |
-| Code review, "check the diff", "look at my changes", pre-PR review | `review` |
-| Second opinion, "what does another model think about this", "get a codex review" | `codex` (gstack) |
-| QA — find bugs AND fix them, "does this work", "test the site", "find bugs on the live app" | `qa` (gstack) |
-| QA — report bugs only without fixing, "show me what's broken" | `qa-only` (gstack) |
-| Ship via PR (review + merge) | `ship` (gstack) |
-| Ship as atomic merge + deploy + verify in one step, "land and deploy", "merge it and watch" | `land-and-deploy` (gstack) |
-| Post-deploy monitoring, "watch prod after the deploy", "is prod stable", "canary check" | `canary` — always run after prod deploy |
-| Architecture review, "does this design make sense" | `plan-eng-review` (gstack) |
-| Visual design question, "how should this look", design system decisions | `design-consultation` (gstack) |
-| Visual audit of the running/deployed app, "does this look right in prod", "design polish on live site" | `design-review` (gstack) — live browser audit, not pre-commit |
-| "Review everything" about a plan | `autoplan` (gstack) |
-| Any invoice, GST, TDS, tax, GSTIN, SAC code, supply type, Section 194J/392, Form 16A work | `sb-invoice-tax` |
-| About to run `git commit` or stage files | `sb-commit` |
-| Before `sb-commit` and as part of `sb-session-end` only — do NOT invoke after every individual file edit | `sb-verify` |
-| Before committing any `.jsx`/`.tsx`/`.css` file | `sb-design-audit` |
-| Once per session via `sb-session-end` — do NOT invoke after each task mid-session | `sb-doc-sync` |
-| Before stopping work / end of session | `sb-session-end` |
-| Any JSX/TSX file — component, page (Dashboard, Settings, Referrals, Contacts, Calendar, or any other), hook, or Tailwind class work | `sb-react-patterns` |
-| Any deal, pipeline, kanban, stage, drag-drop, brand deal, DealForm, DealDetail work | `sb-deal-build` |
-| Before any PR, when skills feel stale, after adding new skills | `sb-skill-audit` |
-| New page, new component, significant UI redesign, "make this look better", "design the X screen" | `frontend-design` (global) — production-grade aesthetics, avoids AI-slop |
-| Color/typography choices, layout decisions, UX patterns, any component styling, "how should this look" | `ui-ux-pro-max` (global) — 50+ styles, 161 palettes, 99 UX guidelines |
-| Animation, transition, framer-motion, toast, drawer, gesture, "add motion", "animate the" | `emilkowal-animations` (global) — 43 animation rules, easing/timing best practices |
-| Auth, password, session, encryption, crypto, payment, Razorpay, "is this secure", RLS, secrets | `owasp-security` (global) — OWASP Top 10 for financial SaaS; fires PRE-implementation to inform design |
-| Full security audit of completed/deployed feature, "security review this end-to-end", "run a security check" | `cso` — POST-implementation security audit; more thorough than owasp-security |
-| Creating a new skill, "add a skill for X", "build a skill that...", skill development | `sb-skill-creator` — gap analysis + impact assessment + delegates to `skill-creator` plugin for full eval loop + wires into dotclaude/CLAUDE.md |
-| Architecture decision, "which approach for X", "should we use Y or Z", technology choice, pattern selection, "write an ADR" | `architecture-decision` (global) — evaluates trade-offs; append output ADR to `docs/DECISIONS.md` |
-| Creating changelog, "prepare release notes", "what changed this sprint", updating CHANGELOG | `changelog-writer` (global) — generates Keep a Changelog format; target file is `docs/Changelog.md` |
-| Update user-facing docs after shipping, "what docs need updating", "document this release" | `document-release` (gstack) — post-ship docs update; more thorough than changelog-writer |
-| Pre-release validation, "is this ready to ship", release health check | `release-health-gates` (global) — validates readiness before tagging or deploying |
-| Performance regression, "is this slower", "check Core Web Vitals", "benchmark this change" | `benchmark` (gstack) — page speed, render time, bundle size regression |
-| Weekly sprint retro, "what did we ship this week", "sprint review", "how did the sprint go" | `retro` (gstack) — per sprint; do NOT invoke after every feature commit |
-| Sprint-end skill learning, "make our skills smarter", "distill lessons", "improve routing from what we learned" | `sb-skill-distill` — run after retro when 5+ sessions accumulated; promotes Lessons Learned into routing rules |
-| Code quality health check, "how's the codebase", "quality audit", "technical debt review" | `health` (gstack) |
-| Save session progress, "checkpoint my work", "save where I am for next session" | `context-save` (gstack) |
-| Resume prior session context, "where was I", "restore my last session" | `context-restore` (gstack) |
+| Trigger | Skill |
+|---------|-------|
+| Before reading any named symbol/store/component/hook/feature area | `sb-graph-navigate` — graphify query, read only `src=` files; falls back to smart-explore on 0 nodes |
+| Open-ended read, or sb-graph-navigate returned 0 nodes | `smart-explore` — tree-sitter AST; never read whole files upfront |
+| Any implementation touching >1 file or >1 step (feature, fix, refactor, new page, redesign) | `sb-orchestrate` — decides brainstorm / SPARC / subagent / direct |
+| Bug, error, unexpected behavior, "why is X broken", "this doesn't work" | `investigate` — diagnose before implementing (not sb-orchestrate first) |
+| Invoice, GST, TDS, GSTIN, SAC code, supply type, Section 194J/392/393, Form 16A | `sb-invoice-tax` — routes to sb-tds-rules / sb-gst-calc / sb-gstin-validate as needed |
+| Any deal/pipeline/kanban/stage/drag-drop/brand-deal/DealForm/DealDetail work | `sb-deal-build` — routes to sb-deal-calc / sb-deal-stages as needed |
+| About to `git commit` or stage files | `sb-commit` — runs `sb-verify` **targeted** mode (matching tests only; full suite is session-end + CI) |
+| Before committing any `.jsx`/`.tsx`/`.css` | `sb-design-audit` — 4 grep checks, ~30s |
+| New page or component (net-new file, not restyle) | `frontend-design` (global) — production aesthetics, avoids AI-slop |
+| Existing-UI styling, color/typography/layout/UX/motion/animation decisions — ANY design question | `graphic-design-psychology` — the master design skill; it pulls in `ui-ux-mindset` CSS recipes when it needs them. Do NOT also invoke `ui-ux-pro-max`/`emilkowal-animations`/`ui-ux-mindset` separately — they're on-demand sub-references now |
+| Auth, password, session, encryption, crypto, payment, Razorpay, RLS, secrets, "is this secure" | `owasp-security` (global) — fires PRE-implementation |
+| Before stopping work / end of session | `sb-session-end` — runs `sb-verify` **full** (skip-if-clean) → `sb-doc-sync` (conditional docs) → learnings → commit |
+
+**On-demand skills** — invoke only when the user asks or the task plainly requires them; never auto-fire:
+`sb-patterns`, `sb-react-patterns`, `sb-verify` (standalone re-run), `sb-doc-sync` (standalone), `pathfinder`, `cso`, `sb-skill-audit`, `sb-skill-creator`, `sb-skill-distill`, `sb-tds-rules`/`sb-gst-calc`/`sb-gstin-validate`/`sb-deal-calc`/`sb-deal-stages` (reached via their routers), `ui-ux-pro-max`, `ui-ux-mindset`, `emilkowal-animations`, `architecture-decision`, `changelog-writer`, `release-health-gates`, and all gstack skills (`review`, `codex`, `qa`, `qa-only`, `ship`, `land-and-deploy`, `canary`, `retro`, `health`, `benchmark`, `office-hours`, `plan-ceo-review`, `plan-eng-review`, `design-consultation`, `design-review`, `autoplan`, `document-release`, `context-save`, `context-restore`) — user-triggered by nature.
 
 **Never run `git commit` directly** — always invoke `sb-commit` which runs verification first.  
-**Never end a session** without invoking `sb-session-end` — it handles all 8 doc updates automatically.  
+**Never end a session** without invoking `sb-session-end` — it handles doc updates (gate-conditional since 2026-07-11) automatically.  
 **Never commit UI files** without invoking `sb-design-audit` first.
 
 ## Session end — mandatory before stopping
 
-Invoke `sb-session-end`. It runs verify → doc-sync (8 files) → append learnings → commit automatically.  
+Invoke `sb-session-end`. It runs verify (full, skip-if-clean) → doc-sync (conditional) → append learnings → commit automatically.  
 **Do not ask before doing any of the above. Do it silently as the final step every time.**

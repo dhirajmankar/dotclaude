@@ -6,10 +6,10 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\Work\\StudioBooks\\.claude\\sync.ps1\"",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& 'C:\\Users\\Work\\StudioBooks\\.claude\\sync.ps1'; & 'C:\\Users\\Work\\StudioBooks\\.claude\\rebuild-graphs.ps1'\"",
             "shell": "powershell",
             "async": true,
-            "statusMessage": "Syncing skills from dotclaude..."
+            "statusMessage": "Syncing skills from dotclaude + refreshing knowledge graphs..."
           }
         ]
       }

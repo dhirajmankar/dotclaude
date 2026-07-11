@@ -1,6 +1,6 @@
 ---
 name: "sb-commit"
-description: "StudioBooks smart commit — ALWAYS use this instead of running git commit directly in this project. Never run git commit manually. Triggers: whenever about to commit, after a task is done, after a bug fix, after any code change that should be saved. Runs sb-verify first, then stages and commits with correct Co-Authored-By footer. Takes a type and message."
+description: "StudioBooks smart commit — ALWAYS use this instead of running git commit directly in this project. Never run git commit manually. Triggers: whenever about to commit, after a task is done, after a bug fix, after any code change that should be saved. Runs sb-verify (targeted mode) first, then stages and commits with correct Co-Authored-By footer. Takes a type and message."
 model: haiku
 ---
 
@@ -11,9 +11,10 @@ Runs the verification gate, stages the right files, and creates a correctly form
 
 ---
 
-## Step 1 — Invoke sb-verify first
+## Step 1 — Invoke sb-verify first (targeted mode)
 
-**Invoke the `sb-verify` skill using the Skill tool before touching git.**  
+**Invoke the `sb-verify` skill using the Skill tool before touching git — in `targeted` mode (its default).**
+Targeted mode runs only the vitest files matching the changed files; lint is covered by husky `lint-staged` at commit time, and the build runs in CI + Vercel. Do NOT run the full suite per commit — the full gate is guaranteed once per session (`sb-session-end` runs `sb-verify full`) plus on every CI push, which is when cross-store mock drift is actually caught (learnings.md 2026-07-10). This tiering was a deliberate, user-approved change (2026-07-11) — don't "restore" the full per-commit gate.
 If sb-verify reports `❌ VERIFY FAILED`: stop. Invoke `investigate` then `superpowers:systematic-debugging` to diagnose root cause. Never inline-patch the failing line — the symptom is rarely the cause. After fix, re-run sb-verify. Do not stage or commit until verify passes.
 
 ---

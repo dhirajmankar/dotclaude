@@ -1,6 +1,6 @@
 ---
 name: "sb-session-end"
-description: "StudioBooks session-end gate — AUTOMATICALLY invoke before stopping work. Single entry point for ending any work session. Runs verification, syncs 8 docs, appends learnings, and commits. Never skip. Triggers: 'end of session', 'done for now', 'let's stop', 'wrap up', 'before we stop', anytime work is concluding."
+description: "StudioBooks session-end gate — AUTOMATICALLY invoke before stopping work. Single entry point for ending any work session. Runs full verification (skip-if-clean), syncs docs conditionally, appends learnings, and commits. Never skip. Triggers: 'end of session', 'done for now', 'let's stop', 'wrap up', 'before we stop', anytime work is concluding."
 model: haiku
 auto-invokes:
   - sb-verify    # Step 1 — lint/build/test gate
@@ -15,11 +15,15 @@ Orchestrates the mandatory end-of-session sequence. Three steps in order — nev
 
 ---
 
-## Step 1 — Verification Gate
+## Step 1 — Verification Gate (full mode, skip-if-clean)
 
-**Invoke the `sb-verify` skill.**
+**Invoke the `sb-verify` skill in `full` mode** — this is the one guaranteed full-suite run of the session (per-commit verification is targeted-only since 2026-07-11).
 
-If sb-verify reports `❌ VERIFY FAILED`: stop. Invoke `investigate` then `superpowers:systematic-debugging` to diagnose root cause before attempting any fix. Never inline-patch on a verify failure. After fix, re-run sb-verify. Do not proceed to docs until verify passes.
+**Skip this step entirely** only when BOTH hold:
+1. the working tree is clean (`git status --short` empty), AND
+2. a `full`-mode sb-verify already passed this session with no code edits after it.
+
+If either fails, run it. If sb-verify reports `❌ VERIFY FAILED`: stop. Invoke `investigate` then `superpowers:systematic-debugging` to diagnose root cause before attempting any fix. Never inline-patch on a verify failure. After fix, re-run sb-verify. Do not proceed to docs until verify passes.
 
 ---
 
@@ -27,10 +31,10 @@ If sb-verify reports `❌ VERIFY FAILED`: stop. Invoke `investigate` then `super
 
 **Invoke the `sb-doc-sync` skill.**
 
-This updates up to 8 docs based on what changed this session:
-1. `CLAUDE.md` — Current Phase line
-2. `docs/CONTEXT.md` — Current Status block
-3. `memory/project_status.md` — task table, next step, completed commits
+This updates up to 8 docs based on what changed this session — **all conditional except CONTEXT.md** (trimmed 2026-07-11):
+1. `CLAUDE.md` — Current Phase line (only if a sprint/phase shipped — G-phase)
+2. `docs/CONTEXT.md` — Current Status block (**always**, 4–6 lines)
+3. `memory/project_status.md` — (only if status materially changed: task completed, next-step changed)
 4. `README.md` (if structure/setup changed)
 5. `docs/ARCHITECTURE.md` (if arch changed)
 6. `docs/STORES.md` (if any store was modified)

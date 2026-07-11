@@ -1,6 +1,6 @@
 ---
 name: "sb-doc-sync"
-description: "StudioBooks documentation sync — invoke ONCE per session via sb-session-end Step 2 only. Do NOT auto-invoke after individual tasks mid-session. Can also be run standalone with /sb-doc-sync when docs feel stale between sessions. Updates 8 files: CLAUDE.md, CONTEXT.md, memory/project_status.md, README.md, ARCHITECTURE.md, STORES.md, BUSINESS_LOGIC.md — stale sections only. File 8 (DECISIONS.md) updates only when architecture-decision was invoked."
+description: "StudioBooks documentation sync — invoke ONCE per session via sb-session-end Step 2 only. Do NOT auto-invoke after individual tasks mid-session. Can also be run standalone with /sb-doc-sync when docs feel stale between sessions. Updates up to 8 files, ALL gate-conditional except docs/CONTEXT.md (the only unconditional write). CLAUDE.md only when a phase/sprint shipped; File 8 (DECISIONS.md) only when architecture-decision was invoked."
 model: haiku
 ---
 
@@ -39,16 +39,16 @@ Every documentation write is triggered by a named gate. When a gate fires **duri
 
 | # | File | What to update |
 |---|------|----------------|
-| 1 | `CLAUDE.md` | `**Current Phase:**` line — what's now done, what's next |
-| 2 | `docs/CONTEXT.md` | `**Current Status**` block — phase, branch, test count, last session summary |
-| 3 | `memory/project_status.md` | task table rows, next step, completed commits |
+| 1 | `CLAUDE.md` | `**Current Phase:**` line — **only if a sprint/phase shipped this session (G-phase)** |
+| 2 | `docs/CONTEXT.md` | `**Current Status**` block — phase, branch, test count, last session summary (**always**) |
+| 3 | `memory/project_status.md` | task table rows, next step, completed commits — **only if status materially changed** |
 | 4 | `README.md` | Quick-start, project structure, design rules if changed |
 | 5 | `docs/ARCHITECTURE.md` | Routing, auth, data layer, security, testing — only if those changed |
 | 6 | `docs/STORES.md` | Store state shapes and actions — only if a store was modified |
 | 7 | `docs/BUSINESS_LOGIC.md` | Subscription, GST/TDS, referral, domain logic — only if those changed |
 | 8 | `docs/DECISIONS.md` | Add new ADR entry if `architecture-decision` skill was invoked this session |
 
-> Files 4–8 are conditional: skip them if nothing in their domain changed this session.
+> Only file 2 (`docs/CONTEXT.md`) is unconditional. Every other file is gate-conditional — skip it if its gate didn't fire this session (trimmed 2026-07-11: a routine session touches 1 doc file, not 3+).
 
 ---
 
@@ -64,7 +64,8 @@ git diff --cached --name-only
 Map changed files to gates: `src/store/*` → G-store, `src/App.jsx` → G-arch, domain rule change → G-domain, etc.
 Only update the target files for gates that actually fired. Skip the rest.
 
-### Step 2 — Update CLAUDE.md (always)
+### Step 2 — Update CLAUDE.md (only if G-phase fired — a sprint/phase shipped)
+- Skip entirely for routine sessions; the Current Phase line describes sprint state, not session state
 - Read current `**Current Phase:**` line
 - Update it: append the completed work phrase, update the "Next sprint:" part
 - Do NOT create or reference a "Completed" list — CLAUDE.md no longer has one
@@ -77,7 +78,8 @@ Only update the target files for gates that actually fired. Skip the rest.
 - Update `**Last session:**` — today's date + 2-sentence summary of what was done
 - Update `**IMPORTANT for next dev:**` — exact next step
 
-### Step 4 — Update memory/project_status.md (always)
+### Step 4 — Update memory/project_status.md (only if status materially changed)
+Skip if: no task completed, no next-step change, no new commits worth recording.
 Memory file path: `C:\Users\Work\.claude\projects\C--Users-Work-StudioBooks\memory\project_status.md`
 - Mark completed tasks as ✅ in the task table
 - Update "Next steps" section
