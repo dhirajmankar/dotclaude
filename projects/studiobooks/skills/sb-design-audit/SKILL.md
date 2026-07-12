@@ -1,13 +1,13 @@
 ---
 name: "sb-design-audit"
-description: "StudioBooks design audit — AUTOMATICALLY invoke before committing any .jsx, .tsx, or .css file in this project. Never commit UI changes without running this first. Triggers: before staging component files, after editing pages or components, before any PR with UI changes, when a page looks visually broken. Checks stale tokens, broken Zustand selectors, missing formatINR, touch target violations."
+description: "StudioBooks design audit — AUTOMATICALLY invoke before committing any .jsx, .tsx, or .css file in this project. Never commit UI changes without running this first. Triggers: before staging component files, after editing pages or components, before any PR with UI changes, when a page looks visually broken. Checks stale tokens, broken Zustand selectors, missing formatINR, touch target violations, F1 render-order, and motion scroll-safety."
 model: sonnet
 ---
 
 # sb-design-audit — Design Audit
 
 ## What This Skill Does
-Runs 4 automated checks against the StudioBooks codebase and reports violations. Each check maps to a real past incident or known failure mode. Takes ~30 seconds. Run before any UI commit.
+Runs 6 automated checks against the StudioBooks codebase and reports violations. Each check maps to a real past incident or known failure mode. Takes ~30 seconds. Run before any UI commit.
 
 ---
 
@@ -101,14 +101,53 @@ This is a heuristic — not all matches are violations. Review each match:
 
 ---
 
+## Check 5 — F1 Render-Order (error-before-loading)
+
+**Why this exists:** Tax.jsx built a consolidated `pageError` + retry banner (row 22, "F1") but the skeleton's `!summaryReady` early return ran BEFORE that banner was ever reached — a failed fetch never sets `hasFetched`, so `summaryReady` stayed false forever and the page was stuck on a permanent skeleton with no way to recover (2026-07-13 investigation, finding T-C). Dashboard/Deals/InvoiceRegister/Analytics got the correct ordering; Tax didn't, because nothing enforced the rule beyond convention.
+
+```bash
+grep -rn "if (!.*Ready)\|if (!.*hasFetched)\|if (loading)" src/pages/ --include="*.jsx"
+```
+
+This is a **heuristic, not a hard gate** — a grep cannot verify actual render order, only flag candidate early returns. For each match: open the file and check whether an `error`/`ErrorState` reference exists **above** that line (in source order). If the file has no error handling above the loading/skeleton return at all, flag it for manual review — it may be intentional (the page genuinely has no failure mode) or it may be the same bug recurring.
+
+**Pass:** every match has a preceding error check, or is confirmed to have no failure mode  
+**Fail (⚠️ review):** list file:line for any match with no error check above it
+
+---
+
+## Check 6 — Motion Scroll-Safety
+
+**Why this exists:** Two related bugs, both from framer-motion wrappers interacting badly with the app's single scroll container (`main` in AppLayout.jsx, `overflow-y-auto`): (a) `h-full` on a motion.div or its child collapses the scroll container's `scrollHeight` once framer-motion applies `will-change: transform` — first found 2026-06-15 (Settings.jsx), reintroduced 2026-07-13 when `AnimatedSwitch` wrapped Deals/InvoiceRegister without a matching height class; (b) a `fixed` overlay that isn't escaped via `createPortal` positions against a transformed motion.div ancestor instead of the viewport (`ProfilePickerSheet.jsx`, 2026-07-13).
+
+```bash
+# (a) h-full as a direct child of an animated wrapper — should be min-h-full
+grep -rn "h-full" src/pages/ src/components/ --include="*.jsx" | grep -v "min-h-full"
+
+# (b) fixed-position overlays — check each result has createPortal in the same file
+grep -rln "className=\"fixed \|className={\`fixed " src/pages/ src/components/ --include="*.jsx"
+
+# (c) new AnimatedSwitch call sites — flag if wrapping page-level content with no className
+grep -rn "<AnimatedSwitch" src/pages/ --include="*.jsx"
+```
+
+All three are **heuristics** — grep can't see computed layout or confirm whether a `fixed` element is already inside a portaled component (e.g. it's fine if the `fixed` div is itself the child of something the file portals higher up). For (a): any `h-full` inside a `motion.div`/`AnimatedSwitch`/`AnimatedShow`-wrapped subtree should be `min-h-full` instead. For (b): every file in the result list should call `createPortal(..., document.body)` — if it doesn't, flag it. For (c): any `AnimatedSwitch` wrapping a full page (not just a small loading/error branch) should pass an explicit height `className` (e.g. `min-h-full`).
+
+**Pass:** no unexplained matches  
+**Fail (⚠️ review):** list file:line for each candidate, with a one-line note on which of (a)/(b)/(c) applies
+
+---
+
 ## Reporting Format
 
 ```
 🎨 DESIGN AUDIT REPORT
-  Check 1 — Stale tokens:    ✅ clean  |  ❌ <N> violations
+  Check 1 — Stale tokens:      ✅ clean  |  ❌ <N> violations
   Check 2 — Zustand selectors: ✅ clean  |  ❌ <N> violations
-  Check 3 — formatINR:       ✅ clean  |  ❌ <N> violations
-  Check 4 — Touch targets:   ✅ clean  |  ⚠️ <N> to review
+  Check 3 — formatINR:         ✅ clean  |  ❌ <N> violations
+  Check 4 — Touch targets:     ✅ clean  |  ⚠️ <N> to review
+  Check 5 — F1 render-order:   ✅ clean  |  ⚠️ <N> to review
+  Check 6 — Motion scroll-safety: ✅ clean  |  ⚠️ <N> to review
 
   <violation details if any>
 
@@ -138,13 +177,14 @@ This is a heuristic — not all matches are violations. Review each match:
 ## Feedback Protocol
 
 Update rules governed by `sb-skill-feedback` skill. Summary:
-- **Never change:** the `🎨 DESIGN AUDIT REPORT` format block — `sb-ui-build` gates on it
-- **Safe to add:** new check categories, new anti-pattern examples, new `## Lessons Learned` entries
+- **Never change:** the `🎨 DESIGN AUDIT REPORT` format block's shape/wording conventions — `sb-ui-build` gates on it
+- **Safe to add:** new check categories (as new rows within the same report shape), new anti-pattern examples, new `## Lessons Learned` entries
 - **Breaking changes:** require version bump + user approval + migration note
 
-Current version: 1.0
+Current version: 1.1
 
 ## Lessons Learned
 
 <!-- Entries added after each invocation where a new edge case, canonical pattern, or rule clarification was discovered. -->
 <!-- Format: - [YYYY-MM-DD] context: <task> — <one sentence lesson>. -->
+- [2026-07-13] scroll-and-state-races: added Check 5 (F1 render-order) and Check 6 (motion scroll-safety) after an investigation found the exact `h-full`-inside-motion.div scroll bug fixed 2026-06-15 had silently recurred via a brand-new primitive (AnimatedSwitch) that nobody checked against the old rule, plus a second instance of the same root cause on Tax.jsx's skeleton/error ordering. A fixed bug that only lives in `learnings.md` prose will resurface the next time a new component is built — it needs an automated heuristic check that runs on every UI commit, not just institutional memory.
