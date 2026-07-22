@@ -92,14 +92,16 @@ Contact autocomplete reads from `contactStore.contacts`. Do not fetch contacts i
 
 ---
 
-## DealDetail (Single Deal Page)
+## DealDetail (Modal Overlay, not a route)
 
 File: `src/pages/Deals/DealDetail.jsx`
+
+Rendered inside a centered `Modal` (`@/components/ui/Modal`, `className="max-w-lg"`) opened from `Deals.jsx` via `selectedDealId` state — it is NOT a page or a route. Matches `DealForm`'s Modal exactly (same width, same component) so viewing and editing a deal use one consistent interaction pattern. Was a right-anchored `Drawer` until 2026-07-22 — changed because it was the only overlay in the app not matching the centered-Modal convention everyone else uses.
 
 - Stage selector: shows current stage + forward/back buttons. Enforce transition rules.
 - Payment date field: only visible when `stage === 'paid'`.
 - Invoice button: only visible when `stage === 'invoice_sent'` — navigates to `/invoices/new?dealId=<id>`.
-- Delete: bottom of page, shows confirmation, then `deleteDeal(id)` → navigate to `/deals`.
+- Delete: bottom of the modal, shows inline confirmation, then `deleteDeal(id)` → `onClose()` (no navigation — it's an overlay, not a page).
 
 ---
 
@@ -130,3 +132,5 @@ Current version: 1.0
 ## Lessons Learned
 
 <!-- Format: - [YYYY-MM-DD] context: <task> — <one sentence lesson>. -->
+- [2026-07-22] distillation: promoted from learnings.md ui-bug-batch (2026-07-21) + this session's payment-update-delete-deal fix — Deal Detail was the only overlay in the app using the right-anchored `Drawer` while its own Edit form and every other dialog used the centered `Modal`; along the way, `Drawer.jsx`'s `md:right-0` desktop repositioning wasn't paired with branching its motion axis via `useIsMobile()`, so it visually rose from the bottom instead of sliding from the right. Fixed by moving DealDetail onto `Modal` entirely (see DealDetail section above) rather than patching Drawer's axis — one fewer overlay pattern to keep in sync.
+- [2026-07-22] distillation: promoted from learnings.md delete-deal-ghosted-gap — a reported "delete doesn't work" on a specific deal was a missing click handler, not a broken delete path: the collapsed "Ghosted" section rendered rows as plain `<div>`s with only a Restore button, unlike every other deal representation (kanban card, mobile row) which all open DealDetail on click. When a mutation "doesn't work" for one specific deal/state and the handler code looks correct, check whether that deal is even reachable in the UI before assuming the button is broken.

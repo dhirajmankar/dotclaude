@@ -1,13 +1,13 @@
 ---
 name: "sb-design-audit"
-description: "StudioBooks design audit — AUTOMATICALLY invoke before committing any .jsx, .tsx, or .css file in this project. Never commit UI changes without running this first. Triggers: before staging component files, after editing pages or components, before any PR with UI changes, when a page looks visually broken. Checks stale tokens, broken Zustand selectors, missing formatINR, touch target violations, F1 render-order, and motion scroll-safety."
+description: "StudioBooks design audit — AUTOMATICALLY invoke before committing any .jsx, .tsx, or .css file in this project. Never commit UI changes without running this first. Triggers: before staging component files, after editing pages or components, before any PR with UI changes, when a page looks visually broken. Checks stale tokens, broken Zustand selectors, missing formatINR, touch target violations, F1 render-order, motion scroll-safety, and hardcoded animation constants."
 model: sonnet
 ---
 
 # sb-design-audit — Design Audit
 
 ## What This Skill Does
-Runs 6 automated checks against the StudioBooks codebase and reports violations. Each check maps to a real past incident or known failure mode. Takes ~30 seconds. Run before any UI commit.
+Runs 7 automated checks against the StudioBooks codebase and reports violations. Each check maps to a real past incident or known failure mode. Takes ~30 seconds. Run before any UI commit.
 
 ---
 
@@ -118,7 +118,7 @@ This is a **heuristic, not a hard gate** — a grep cannot verify actual render 
 
 ## Check 6 — Motion Scroll-Safety
 
-**Why this exists:** Two related bugs, both from framer-motion wrappers interacting badly with the app's single scroll container (`main` in AppLayout.jsx, `overflow-y-auto`): (a) `h-full` on a motion.div or its child collapses the scroll container's `scrollHeight` once framer-motion applies `will-change: transform` — first found 2026-06-15 (Settings.jsx), reintroduced 2026-07-13 when `AnimatedSwitch` wrapped Deals/InvoiceRegister without a matching height class; (b) a `fixed` overlay that isn't escaped via `createPortal` positions against a transformed motion.div ancestor instead of the viewport (`ProfilePickerSheet.jsx`, 2026-07-13).
+**Why this exists:** Related bugs, all from framer-motion wrappers interacting badly with the app's single scroll container (`main` in AppLayout.jsx, `overflow-y-auto`): (a) `h-full` on a motion.div or its child collapses the scroll container's `scrollHeight` once framer-motion applies `will-change: transform` — first found 2026-06-15 (Settings.jsx), reintroduced 2026-07-13 when `AnimatedSwitch` wrapped Deals/InvoiceRegister without a matching height class; (b) a `fixed` overlay that isn't escaped via `createPortal` positions against a transformed motion.div ancestor instead of the viewport (`ProfilePickerSheet.jsx`, 2026-07-13); (d) a page's own top-level return wraps its content in a bare `motion.div` with its own `initial`/`animate` — AppLayout.jsx's `AnimatePresence`/`motion.div` around `<Outlet/>` already animates every route transition, so this double-animates and reproduces the exact will-change/scrollHeight bug via a path that doesn't touch `AnimatedSwitch` at all, so (c) never catches it (Tax.jsx/Income.jsx/Notifications.jsx, 2026-07-18 — reported by beta testers as "page not scrollable").
 
 ```bash
 # (a) h-full as a direct child of an animated wrapper — should be min-h-full
@@ -129,12 +129,31 @@ grep -rln "className=\"fixed \|className={\`fixed " src/pages/ src/components/ -
 
 # (c) new AnimatedSwitch call sites — flag if wrapping page-level content with no className
 grep -rn "<AnimatedSwitch" src/pages/ --include="*.jsx"
+
+# (d) page-root bare motion.div — a page's own top-level return should never
+# re-animate; AppLayout already does it for every route. Every hit needs
+# manual confirmation it's the page's OWN top-level return (not a nested
+# modal/sheet/branch, which legitimately animates on its own).
+grep -rln "motion\.div" src/pages/*/*.jsx --include="*.jsx" | xargs -I{} sh -c 'grep -n -A2 "return (" "{}" | grep -q "motion\.div" && echo "{}"'
 ```
 
-All three are **heuristics** — grep can't see computed layout or confirm whether a `fixed` element is already inside a portaled component (e.g. it's fine if the `fixed` div is itself the child of something the file portals higher up). For (a): any `h-full` inside a `motion.div`/`AnimatedSwitch`/`AnimatedShow`-wrapped subtree should be `min-h-full` instead. For (b): every file in the result list should call `createPortal(..., document.body)` — if it doesn't, flag it. For (c): any `AnimatedSwitch` wrapping a full page (not just a small loading/error branch) should pass an explicit height `className` (e.g. `min-h-full`).
+All four are **heuristics** — grep can't see computed layout or confirm whether a `fixed` element is already inside a portaled component (e.g. it's fine if the `fixed` div is itself the child of something the file portals higher up), and (d) can't distinguish a page's top-level return from a nested one on its own — open each flagged file and confirm which return statement matched. For (a): any `h-full` inside a `motion.div`/`AnimatedSwitch`/`AnimatedShow`-wrapped subtree should be `min-h-full` instead. For (b): every file in the result list should call `createPortal(..., document.body)` — if it doesn't, flag it. For (c): any `AnimatedSwitch` wrapping a full page (not just a small loading/error branch) should pass an explicit height `className` (e.g. `min-h-full`). For (d): if the match is the page's own top-level return, convert to a plain `<div>` — reuse the `.page-enter` CSS class (`src/index.css`, a one-shot CSS `@keyframes` animation, already the established pattern for e.g. Notifications.jsx's loading/empty branches) if an entrance animation is genuinely wanted; never framer-motion `initial`/`animate` at a page root.
 
 **Pass:** no unexplained matches  
-**Fail (⚠️ review):** list file:line for each candidate, with a one-line note on which of (a)/(b)/(c) applies
+**Fail (⚠️ review):** list file:line for each candidate, with a one-line note on which of (a)/(b)/(c)/(d) applies
+
+---
+
+## Check 7 — Hardcoded Animation Constants
+
+**Why this exists:** `Drawer.jsx` and `NotificationCenter.jsx` each hand-copied the `IOS_EASE` cubic-bezier value instead of importing it from `src/constants/animation.js` — only `Modal.jsx` actually imported the canonical constant (2026-07-21, ui-bug-batch). A future easing tweak to the shared constant would silently apply to only one of the three files.
+
+```bash
+grep -rln "cubic-bezier\|IOS_EASE\s*=" src/pages/ src/components/ --include="*.jsx" | grep -v "constants/animation.js"
+```
+
+**Pass:** zero matches (all easing values imported from `src/constants/animation.js`)
+**Fail:** list file:line + the duplicated value. Fix: import `IOS_EASE` (or the relevant constant) from `@/constants/animation` instead of inlining it.
 
 ---
 
@@ -148,6 +167,7 @@ All three are **heuristics** — grep can't see computed layout or confirm wheth
   Check 4 — Touch targets:     ✅ clean  |  ⚠️ <N> to review
   Check 5 — F1 render-order:   ✅ clean  |  ⚠️ <N> to review
   Check 6 — Motion scroll-safety: ✅ clean  |  ⚠️ <N> to review
+  Check 7 — Animation constants: ✅ clean  |  ❌ <N> violations
 
   <violation details if any>
 
@@ -181,10 +201,12 @@ Update rules governed by `sb-skill-feedback` skill. Summary:
 - **Safe to add:** new check categories (as new rows within the same report shape), new anti-pattern examples, new `## Lessons Learned` entries
 - **Breaking changes:** require version bump + user approval + migration note
 
-Current version: 1.1
+Current version: 1.2
 
 ## Lessons Learned
 
 <!-- Entries added after each invocation where a new edge case, canonical pattern, or rule clarification was discovered. -->
 <!-- Format: - [YYYY-MM-DD] context: <task> — <one sentence lesson>. -->
 - [2026-07-13] scroll-and-state-races: added Check 5 (F1 render-order) and Check 6 (motion scroll-safety) after an investigation found the exact `h-full`-inside-motion.div scroll bug fixed 2026-06-15 had silently recurred via a brand-new primitive (AnimatedSwitch) that nobody checked against the old rule, plus a second instance of the same root cause on Tax.jsx's skeleton/error ordering. A fixed bug that only lives in `learnings.md` prose will resurface the next time a new component is built — it needs an automated heuristic check that runs on every UI commit, not just institutional memory.
+- [2026-07-18] beta-defect-sweep: Check 6's (a)/(b)/(c) all target `AnimatedSwitch`-adjacent patterns, but Tax.jsx, Income.jsx, and Notifications.jsx each hand-rolled their own page-root `motion.div` with an independent `initial`/`animate` — never touching `AnimatedSwitch` — and slipped through the entire 2026-07-13 sweep undetected. Added (d) to close that gap. Root cause pattern: AppLayout.jsx's route-level `AnimatePresence` already animates every page transition; any page that ALSO animates its own root double-stacks framer-motion's `will-change: transform`, which is the actual scroll-breaking mechanism, not `AnimatedSwitch` specifically. The heuristic needs to key on "is this a page's own top-level return", not "does it use component X" — a check written against one primitive will always miss the same bug expressed through a different primitive.
+- [2026-07-22] distillation: promoted from learnings.md ui-bug-batch (2026-07-21) — added Check 7 after finding the `IOS_EASE` easing constant hand-copied into `Drawer.jsx` and `NotificationCenter.jsx` instead of imported from `src/constants/animation.js`; only `Modal.jsx` actually imported it. Copy-pasting a shared constant instead of importing it means a future tweak silently applies to only one of several files — the same "shared value duplicated instead of imported" shape as the IOS_EASE case can recur with any other constant, so this check is intentionally broad (any `cubic-bezier`/`IOS_EASE` literal outside the constants file), not narrowly grep'd to just those two filenames.

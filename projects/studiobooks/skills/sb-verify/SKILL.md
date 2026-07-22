@@ -69,6 +69,17 @@ npm run test -- --run
 Expected: all tests pass. Note the exact count (e.g. "1654 passed").
 On failure: **STOP. Invoke `investigate` then `superpowers:systematic-debugging`. Only delete a test if the code it covered was intentionally removed — verify this first.**
 
+### Step 4 — Edge Function Deploy Drift (conditional)
+
+**Run only if this session's diff touched `supabase/functions/`.** A merged migration/function is not a deployed one — `delete-account` sat merged-but-undeployed in prod for weeks in 2026-07 before beta testers hit it, because nothing checked deployed state, only git state.
+
+```bash
+./scripts/check-edge-deploy-drift.sh
+```
+
+Expected: no drift reported, or drift is expected because you haven't deployed yet this session — say so explicitly rather than silently passing over it.
+If a webhook-receiving function was touched (e.g. `handle-payment-webhook`), remind that `supabase functions deploy <name> --no-verify-jwt` is required for any function receiving unauthenticated third-party callbacks — this flag is not test/live-mode specific and resets to enabled (rejecting the vendor's calls with a platform-level 401 before your code ever runs) on a plain redeploy if omitted.
+
 ---
 
 ## Reporting Format
@@ -130,3 +141,4 @@ Current version: 2.0
 <!-- Entries added after each invocation where a new edge case, canonical pattern, or rule clarification was discovered. -->
 <!-- Format: - [YYYY-MM-DD] context: <task> — <one sentence lesson>. -->
 - [2026-05-20] skill gap audit: sb-orchestrate review — "STOP. Fix the issue." on failure is insufficient; without explicit routing to `investigate` + `systematic-debugging`, the fix path is ad-hoc and the debugging skills never get invoked from failure points.
+- [2026-07-22] distillation: promoted from learnings.md 2026-07-14 ("git merge ≠ deployed") + 2026-07-18 (delete-account sat undeployed for weeks despite the root cause being correctly diagnosed 4 days earlier) — a documented root cause with no automated check will recur. `scripts/check-edge-deploy-drift.sh` existed since 2026-07-18 but was never wired into any verify gate until this distillation added Step 4. The lesson generalizes: a lesson written only in prose (learnings.md) is not self-enforcing — it needs a check that actually runs, not institutional memory of the incident.
