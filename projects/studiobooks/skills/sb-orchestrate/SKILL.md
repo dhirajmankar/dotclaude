@@ -52,7 +52,23 @@ One entry point. Six phases. Every multi-step task flows through here.
 | "Review everything about this plan" | `Skill({ skill: "autoplan" })` → done, stop here |
 | Creating a new skill, "add a skill for X", skill development, "build a skill that..." | `Skill({ skill: "sb-skill-creator" })` → done, stop here |
 | Copy edit, label/text change, single config tweak — ≤2 files, zero logic change | Skip all phases → implement directly |
+| Small fix — ≤2 files, ≤~40 changed lines, no new store/route/service, root cause already known | **Fast path** (Execution Economy rule 2) → implement inline, targeted test + lint only |
 | Everything else (feature, fix, refactor, new page) | → Phase 0 |
+
+---
+
+## Execution Economy — read before any phase (v1.3)
+
+Credit burn has four sources: skill-chain overhead, subagent cold starts, full-suite verification, and unbatched I/O. These rules override enthusiasm:
+
+1. **Batch I/O, not just tasks.** All independent Reads/Greps in ONE message (parallel tool calls). All edits to one file in ONE Edit call. Never re-read a file just edited (the harness tracks state). Never re-read files already in context.
+2. **Fast path:** ≤2 files AND ≤~40 changed lines AND no new store/route/service → implement inline. Run only the matching test file(s) + lint. Skip subagents, plan reviews, and all Phase 2 steps except targeted verification and (if JSX changed) sb-design-audit. Applies to bug fixes too, once `investigate` has the root cause.
+3. **Targeted verification mid-session:** `npx vitest run <matching test files>` — the FULL suite runs only inside `sb-session-end`/`sb-verify` before commit. A mid-loop full run costs minutes and thousands of output tokens and finds nothing the targeted file wouldn't.
+4. **Skill budget:** ≤3 skill invocations for a small task, ≤6 for a feature. A domain skill already loaded this session is NOT re-invoked — its content is already in context.
+5. **Subagent economy:** every subagent cold start re-derives context the main session already has. Prefer inline Direct whenever the work fits in context; use ONE well-specified subagent only for >8-file mechanical work. Two subagents need explicit justification.
+6. **Phase 2 conditional gates default to SKIP.** Run cso only when the diff touches auth/payments/RLS; benchmark only for perf-relevant diffs; codex/qa only when the user asks.
+7. **Phase 3 is SUSPENDED until the app has real users** (closed alpha, `docs/PATH_TO_BETA.md` Stage 6). canary / design-review / document-release / retro currently observe zero traffic — pure credit burn. Re-enable at alpha.
+8. **Runtime evidence beats a second review.** One `verify` pass (actually drive the changed flow in the dev server) catches integration bugs no static review can — and costs less. Budget: max 1 static review + 1 runtime verify per feature. The 2026-07-02 audit proved the old all-static gate chain shipped P0 payment bugs anyway.
 
 ---
 
@@ -522,7 +538,7 @@ Update rules governed by `sb-skill-feedback` skill. Summary:
 - **Safe to add:** new pre-routing task types, new rows in CLAUDE.md's auto-invoke table (domain signals live there now), new model tier rows, new `## Lessons Learned` entries
 - **Breaking changes:** require version bump + user approval + migration note
 
-Current version: 1.2 (Phase 2 rewritten as ordered steps 2.1–2.8 with explicit fix loops + Learning Capture)
+Current version: 1.3 (Execution Economy layer added: I/O batching, expanded fast path, targeted mid-session tests, skill/subagent budgets, Phase 3 suspended pre-alpha, runtime-evidence preference)
 
 ## Lessons Learned
 
@@ -533,4 +549,5 @@ Current version: 1.2 (Phase 2 rewritten as ordered steps 2.1–2.8 with explicit
 - [2026-05-20] eng audit v2: pipeline had no post-ship phase — canary, design-review, document-release, retro were all installed but unwired; added Phase 3 to close the ops lane; also added cso + benchmark to Phase 2 (pre-implementation owasp-security ≠ post-implementation security audit), codex as second-opinion option, and 8 new Pre-Routing rows (qa-only, land-and-deploy, canary, retro, codex, health) to match full gstack skill set.
 - [2026-05-20] eng audit: dual routing tables (CLAUDE.md auto-invoke + sb-orchestrate Phase 0.5) were identical and diverging independently — removed Phase 0.5 table from sb-orchestrate; CLAUDE.md now owns domain routing, sb-orchestrate owns execution orchestration only; also removed unreachable SPARC section from Phase 1, collapsed Parallel Agents to a stub, added tiny-task fast path to Pre-Routing, and broadened sb-react-patterns trigger in CLAUDE.md to catch all JSX pages.
 - [2026-06-02] token audit: Phase 2 `review` was firing after `subagent-driven-development` creating a 4th review pass (SDD already runs spec+quality review per task + final review = 2N+1 reviews). Added dedup guard: skip `review` in Phase 2 when SDD was the execution path. Also: SDD was used for plans with ≤2-file tasks — moved Single Subagent preference above SDD with explicit file-count trigger. Added mandatory test coverage rule to SDD code quality reviewer (fail if logic added without tests).
+- [2026-07-03] credit audit: the full gate chain (~15–25 skill invocations + subagent cold starts + mid-session full-suite runs + Phase 3 ops skills with zero prod users) made even small improvements expensive, while the 2026-07-02 go-live audit proved the all-static chain still shipped P0 payment bugs — added Execution Economy section (v1.3): batch I/O, fast path for ≤2-file/≤40-line changes, targeted tests mid-session, skill budget, Phase 3 suspended until closed alpha, prefer 1 runtime verify over stacked static reviews.
 - [2026-06-04] flow audit: Phase 2 was a flat table — review/cso/sb-design-audit findings had no fix path; after any gate found an issue there was nothing to do. Rewrote Phase 2 as ordered steps 2.1–2.8 with explicit P1/P2/P3 routing per finding severity, max-cycle fix loops (2.2 max 2 cycles, 2.4 max 1 re-review), and a mandatory Step 2.6 Learning Capture that feeds learnings.md + session-outcomes.jsonl + domain skill Lessons Learned before every ship.
